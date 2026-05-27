@@ -11,9 +11,9 @@ export default function ReadinessSection() {
   const displayScore = useTransform(motionScore, (v) => Math.round(v));
 
   const phases = [
-    { score: 42, contribution: 3, label: "Where most people start", color: "#E11D48", balance: "$380K" },
-    { score: 65, contribution: 6, label: "A small change, big impact", color: "#D97706", balance: "$720K" },
-    { score: 80, contribution: 8, label: "You're on track", color: "#059669", balance: "$1.2M" },
+    { score: 42, contribution: 3, label: "Where most Americans start", color: "#F43F5E", balance: "$380K", warn: "$820K short of your goal" },
+    { score: 65, contribution: 6, label: "A small change, big impact", color: "#F59E0B", balance: "$720K", warn: "Just 3% more to hit target" },
+    { score: 80, contribution: 8, label: "You're fully on track ✓", color: "#10B981", balance: "$1.2M", warn: "Retire confidently at 65" },
   ];
 
   useEffect(() => {
@@ -33,22 +33,25 @@ export default function ReadinessSection() {
   return (
     <section id="experience" ref={ref} className="section-dark relative py-28 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 50% 40% at 50% 50%, rgba(5,150,105,0.06) 0%, transparent 60%)"
+        background: `radial-gradient(ellipse 50% 40% at 50% 50%, ${currentPhase.color}18 0%, transparent 60%)`,
+        transition: "background 1s"
       }} />
+      <div className="absolute inset-0 pattern-grid opacity-30 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <motion.div initial={{ opacity: 0, y: 28 }} animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }} className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#059669]/20 bg-[#059669]/[0.06] mb-5">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-            <span className="text-[12px] font-semibold text-[#10B981] tracking-wider uppercase">Readiness</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.22)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" style={{ boxShadow: "0 0 8px #10B981" }} />
+            <span className="text-[12px] font-semibold text-[#34D399] tracking-wider uppercase">Readiness Engine</span>
           </div>
-          <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-bold text-white tracking-[-0.03em] leading-[1.12] mb-4">
-            Watch your retirement future{" "}
-            <span className="bg-gradient-to-r from-[#10B981] to-[#22D3EE] bg-clip-text text-transparent">change in real time.</span>
+          <h2 className="text-[clamp(1.9rem,4.2vw,3.2rem)] font-bold text-white tracking-[-0.035em] leading-[1.08] mb-5">
+            Watch your future{" "}
+            <span className="gradient-text-money">change in real time.</span>
           </h2>
-          <p className="text-[16px] text-white/35 leading-relaxed">
-            Every decision — contribution increase, investment switch, auto-escalation — instantly updates your projected retirement outcome.
+          <p className="text-[16px] text-white/55 leading-relaxed">
+            Every decision — contribution rate, investment mix, auto-escalation — instantly updates your projected outcome.
+            <span className="block mt-2 text-white/35">Drag the slider. See the impact. Make the call.</span>
           </p>
         </motion.div>
 
@@ -56,14 +59,20 @@ export default function ReadinessSection() {
           {/* Gauge */}
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.3 }} className="relative">
-            <div className="absolute -inset-8 rounded-full"
-              style={{ background: `radial-gradient(circle, ${currentPhase.color}10, transparent 70%)`, transition: "background 1s" }} />
+            <div className="absolute -inset-12 rounded-full animate-pulse-glow"
+              style={{ background: `radial-gradient(circle, ${currentPhase.color}30, transparent 70%)`, filter: "blur(20px)", transition: "background 1s" }} />
             <svg width="260" height="260" viewBox="0 0 280 280">
-              <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
-              <circle cx="140" cy="140" r="120" fill="none" stroke={currentPhase.color} strokeWidth="8" strokeLinecap="round"
+              <defs>
+                <linearGradient id="readinessGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={currentPhase.color} />
+                  <stop offset="100%" stopColor={currentPhase.score >= 80 ? "#22D3EE" : currentPhase.color} />
+                </linearGradient>
+              </defs>
+              <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />
+              <circle cx="140" cy="140" r="120" fill="none" stroke="url(#readinessGrad)" strokeWidth="10" strokeLinecap="round"
                 strokeDasharray={circumference} strokeDashoffset={dashOffset} transform="rotate(-90 140 140)"
                 style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1), stroke 0.5s" }}
-                filter={`drop-shadow(0 0 10px ${currentPhase.color}40)`} />
+                filter={`drop-shadow(0 0 16px ${currentPhase.color}80)`} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <motion.div className="text-[52px] font-bold text-white tabular-nums leading-none">
@@ -84,17 +93,18 @@ export default function ReadinessSection() {
                   <span className="text-[14px] font-semibold" style={{ color: currentPhase.color }}>{currentPhase.label}</span>
                 </div>
                 <div className="space-y-3 mb-6">
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                    <div className="text-[11px] text-white/25 mb-1">Contribution Rate</div>
-                    <div className="text-[24px] font-bold text-white tabular-nums">{currentPhase.contribution}%</div>
-                    <div className="w-full h-1.5 bg-white/[0.04] rounded-full mt-2 overflow-hidden">
-                      <motion.div className="h-full rounded-full" style={{ backgroundColor: currentPhase.color }}
+                  <div className="rounded-xl border border-white/[0.08] p-4" style={{ background: "rgba(255,255,255,0.025)" }}>
+                    <div className="text-[11px] text-white/40 mb-1">Contribution Rate</div>
+                    <div className="text-[26px] font-bold text-white tabular-nums">{currentPhase.contribution}%</div>
+                    <div className="w-full h-1.5 bg-white/[0.05] rounded-full mt-2 overflow-hidden">
+                      <motion.div className="h-full rounded-full" style={{ backgroundColor: currentPhase.color, boxShadow: `0 0 8px ${currentPhase.color}` }}
                         animate={{ width: `${currentPhase.contribution * 5}%` }} transition={{ duration: 0.8 }} />
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                    <div className="text-[11px] text-white/25 mb-1">Projected at 65</div>
-                    <div className="text-[24px] font-bold gradient-text-static tabular-nums">{currentPhase.balance}</div>
+                  <div className="rounded-xl border border-white/[0.08] p-4" style={{ background: "rgba(255,255,255,0.025)" }}>
+                    <div className="text-[11px] text-white/40 mb-1">Projected at 65</div>
+                    <div className="text-[26px] font-bold gradient-text-static tabular-nums">{currentPhase.balance}</div>
+                    <div className="text-[10px] mt-1" style={{ color: currentPhase.color }}>{currentPhase.warn}</div>
                   </div>
                 </div>
               </motion.div>

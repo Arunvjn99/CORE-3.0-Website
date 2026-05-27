@@ -1,52 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, createContext, useContext } from "react";
+import { createContext, useContext } from "react";
 
-const ThemeContext = createContext<{ isDark: boolean }>({ isDark: false });
+const ThemeContext = createContext<{ isDark: boolean }>({ isDark: true });
 export const useThemeMode = () => useContext(ThemeContext);
 
 /**
- * Watches scroll position and flips [data-theme] on <main> when
- * the dark-section sentinel enters the viewport.
- * Bridge.surf style: light top → dark bottom.
+ * All-dark Awwwards layout — no transition needed.
+ * Kept as a context provider for compatibility with consumers.
  */
 export default function ThemeTransition({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
-  const mainRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const sentinel = document.getElementById("dark-start");
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsDark(entry.isIntersecting || entry.boundingClientRect.top < 0);
-      },
-      { threshold: 0, rootMargin: "-10% 0px 0px 0px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
-
-  // Also watch scroll for hysteresis (going back up → light)
-  useEffect(() => {
-    const sentinel = document.getElementById("dark-start");
-    if (!sentinel) return;
-
-    const onScroll = () => {
-      const rect = sentinel.getBoundingClientRect();
-      // If top of dark sentinel is below 90% of viewport → still light
-      setIsDark(rect.top < window.innerHeight * 0.4);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <ThemeContext.Provider value={{ isDark }}>
-      <main ref={mainRef} data-theme={isDark ? "dark" : "light"}>
+    <ThemeContext.Provider value={{ isDark: true }}>
+      <main data-theme="dark">
         {children}
       </main>
     </ThemeContext.Provider>
