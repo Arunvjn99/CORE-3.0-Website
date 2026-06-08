@@ -1,56 +1,72 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════
-   AWWWARDS-GRADE PALETTE
-   Deep midnight → electric blue → cyan → dark purple
-   Apple.com-inspired multi-stop gradients
+   CORE 3.0 — DARK AI PALETTE
+   Deep black → violet-purple AI accent → teal confirm
    ═══════════════════════════════════════════════════ */
 
 :root {
-  /* Light surface (intro only) */
-  --bg: #F6F8FF;
-  --bg-elevated: #FFFFFF;
-  --bg-subtle: #EEF1FB;
-  --text-primary: #0A0E27;
-  --text-secondary: #3A4368;
-  --text-tertiary: #6B7396;
-  --text-muted: #A0A6BF;
-  --border: rgba(10, 14, 39, 0.08);
-  --border-strong: rgba(10, 14, 39, 0.14);
+  /* Page surfaces */
+  --bg:          #080B10;
+  --bg-2:        #0D1117;
+  --bg-3:        #111827;
+  --bg-elevated: #161D2B;
+  --bg-raised:   #1E2736;
 
-  /* Awwwards palette — rich AI / money / growth */
-  --midnight: #050816;
-  --deep: #0A0E27;
-  --elevated: #0F1531;
-  --raised: #161E47;
+  /* Legacy aliases (kept for component compat) */
+  --bg-subtle:   #111827;
+  --text-primary:   #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.75);
+  --text-tertiary:  rgba(255,255,255,0.45);
+  --text-muted:     rgba(255,255,255,0.25);
+  --border:         rgba(255,255,255,0.07);
+  --border-strong:  rgba(255,255,255,0.12);
 
-  --blue-electric: #2563EB;
-  --blue-bright: #3B82F6;
-  --blue-glow: #60A5FA;
-  --cyan-vibrant: #06B6D4;
-  --cyan-bright: #22D3EE;
-  --cyan-glow: #67E8F9;
-  --purple-deep: #4C1D95;
-  --purple-rich: #6D28D9;
-  --purple-bright: #8B5CF6;
-  --purple-glow: #A78BFA;
-  --emerald: #10B981;
-  --emerald-bright: #34D399;
-  --amber: #F59E0B;
-  --rose: #F43F5E;
+  /* Dark-era depth tokens */
+  --midnight: #080B10;
+  --deep:     #0D1117;
+  --elevated: #161D2B;
+  --raised:   #1E2736;
 
-  /* Apple-style multi-stop gradients */
-  --gradient-hero: linear-gradient(120deg, #3B82F6 0%, #22D3EE 35%, #8B5CF6 70%, #6D28D9 100%);
-  --gradient-aurora: linear-gradient(135deg, #2563EB 0%, #06B6D4 30%, #8B5CF6 60%, #4C1D95 100%);
-  --gradient-money: linear-gradient(135deg, #22D3EE 0%, #10B981 50%, #34D399 100%);
-  --gradient-warm: linear-gradient(135deg, #F59E0B, #F43F5E, #8B5CF6);
-  --gradient-mesh: radial-gradient(at 20% 30%, rgba(37,99,235,0.35) 0%, transparent 50%),
-                   radial-gradient(at 80% 20%, rgba(6,182,212,0.28) 0%, transparent 50%),
-                   radial-gradient(at 40% 80%, rgba(139,92,246,0.32) 0%, transparent 50%),
-                   radial-gradient(at 90% 90%, rgba(76,29,149,0.30) 0%, transparent 50%);
+  /* AI accent — violet-purple */
+  --ai:          #7C6BFF;
+  --ai-2:        #A89BFF;
+  --ai-glow:     rgba(124,107,255,0.15);
+  --ai-glow-2:   rgba(124,107,255,0.06);
+
+  /* Teal — positive / confirm */
+  --teal:        #00D4AA;
+  --teal-2:      #5EECD4;
+  --teal-glow:   rgba(0,212,170,0.12);
+
+  /* Legacy palette aliases → mapped to new AI/teal */
+  --blue-electric: #7C6BFF;
+  --blue-bright:   #A89BFF;
+  --blue-glow:     rgba(124,107,255,0.3);
+  --cyan-vibrant:  #00D4AA;
+  --cyan-bright:   #5EECD4;
+  --cyan-glow:     rgba(0,212,170,0.25);
+  --purple-deep:   #3D2FA0;
+  --purple-rich:   #5B4FD4;
+  --purple-bright: #7C6BFF;
+  --purple-glow:   #A89BFF;
+  --emerald:       #00D4AA;
+  --emerald-bright:#5EECD4;
+  --amber:         #F5A623;
+  --rose:          #FF5C5C;
+
+  /* Gradients */
+  --gradient-hero:   linear-gradient(135deg, #7C6BFF 0%, #A89BFF 50%, #00D4AA 100%);
+  --gradient-aurora: linear-gradient(135deg, #5B4FD4 0%, #7C6BFF 40%, #00D4AA 100%);
+  --gradient-money:  linear-gradient(135deg, #00D4AA 0%, #5EECD4 100%);
+  --gradient-warm:   linear-gradient(135deg, #F5A623, #FF5C5C, #7C6BFF);
+  --gradient-mesh:   radial-gradient(at 20% 30%, rgba(124,107,255,0.35) 0%, transparent 50%),
+                     radial-gradient(at 80% 20%, rgba(0,212,170,0.25) 0%, transparent 50%),
+                     radial-gradient(at 40% 80%, rgba(124,107,255,0.28) 0%, transparent 50%),
+                     radial-gradient(at 90% 90%, rgba(59,47,160,0.30) 0%, transparent 50%);
 
   /* Shared */
-  --radius: 16px;
+  --radius:    16px;
   --radius-lg: 24px;
   --radius-sm: 10px;
 }
@@ -69,38 +85,38 @@ html {
 }
 
 body {
-  background: #050816;
-  color: #F0F2FF;
+  background: #080B10;
+  color: #FFFFFF;
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
 /* ─── THEME TRANSITION ─── */
 [data-theme="dark"] {
-  background-color: #050816;
-  color: #F0F2FF;
+  background-color: #080B10;
+  color: #FFFFFF;
 }
 
 .section-light {
-  background-color: #F6F8FF;
-  color: #0A0E27;
+  background-color: #0D1117;
+  color: #FFFFFF;
   transition: background-color 0.6s ease, color 0.6s ease;
 }
 
 .section-dark {
-  background-color: #050816;
-  color: #F0F2FF;
+  background-color: #080B10;
+  color: #FFFFFF;
   transition: background-color 0.6s ease, color 0.6s ease;
 }
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.25); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.45); }
+::-webkit-scrollbar-thumb { background: rgba(124,107,255,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(124,107,255,0.45); }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.25);
+  background: rgba(124, 107, 255, 0.25);
   color: inherit;
 }
 
@@ -203,13 +219,13 @@ body {
     0 24px 64px rgba(37,99,235,0.18);
 }
 .shadow-glow-blue {
-  box-shadow: 0 0 40px rgba(59,130,246,0.35), 0 0 80px rgba(37,99,235,0.15);
+  box-shadow: 0 0 40px rgba(124,107,255,0.4), 0 0 80px rgba(124,107,255,0.15);
 }
 .shadow-glow-purple {
-  box-shadow: 0 0 40px rgba(139,92,246,0.4), 0 0 80px rgba(76,29,149,0.18);
+  box-shadow: 0 0 40px rgba(124,107,255,0.45), 0 0 80px rgba(91,79,212,0.2);
 }
 .shadow-glow-cyan {
-  box-shadow: 0 0 40px rgba(34,211,238,0.35), 0 0 80px rgba(6,182,212,0.15);
+  box-shadow: 0 0 40px rgba(0,212,170,0.35), 0 0 80px rgba(0,212,170,0.15);
 }
 .shadow-dark {
   box-shadow:
@@ -331,7 +347,7 @@ input[type="range"] {
 }
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
-  background: linear-gradient(90deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3));
+  background: linear-gradient(90deg, rgba(124,107,255,0.3), rgba(0,212,170,0.3));
   border-radius: 2px;
 }
 input[type="range"]::-webkit-slider-thumb {
@@ -339,9 +355,9 @@ input[type="range"]::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  background: linear-gradient(135deg, #7C6BFF, #00D4AA);
   margin-top: -7px;
-  box-shadow: 0 0 20px rgba(59,130,246,0.6), 0 0 0 4px rgba(139,92,246,0.15);
+  box-shadow: 0 0 20px rgba(124,107,255,0.6), 0 0 0 4px rgba(124,107,255,0.15);
   cursor: pointer;
 }
 
@@ -368,11 +384,11 @@ input[type="range"]::-webkit-slider-thumb {
 /* ─── CONIC GLOW ─── */
 .conic-glow {
   background: conic-gradient(from 0deg at 50% 50%,
-    #3B82F6 0deg,
-    #22D3EE 90deg,
-    #8B5CF6 180deg,
-    #6D28D9 270deg,
-    #3B82F6 360deg);
+    #7C6BFF 0deg,
+    #00D4AA 90deg,
+    #A89BFF 180deg,
+    #5B4FD4 270deg,
+    #7C6BFF 360deg);
 }
 
 /* ─── NOISE TEXTURE ─── */
