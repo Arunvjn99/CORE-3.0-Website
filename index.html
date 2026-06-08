@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>core — Retire confident.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --bg:          #080B10;
+  --bg-2:        #0D1117;
+  --bg-3:        #111827;
+  --surface:     #161D2B;
+  --surface-2:   #1E2736;
+  --border:      rgba(255,255,255,0.07);
+  --border-2:    rgba(255,255,255,0.12);
+
+  --ink:         #FFFFFF;
+  --ink-2:       rgba(255,255,255,0.75);
+  --ink-3:       rgba(255,255,255,0.45);
+  --ink-4:       rgba(255,255,255,0.25);
+
+  --ai:          #7C6BFF;
+  --ai-2:        #A89BFF;
+  --ai-glow:     rgba(124,107,255,0.15);
+  --ai-glow-2:   rgba(124,107,255,0.06);
+
+  --teal:        #00D4AA;
+  --teal-glow:   rgba(0,212,170,0.12);
+  --gold:        #F5A623;
+  --red:         #FF5C5C;
+  --sky:         #60A5FA;
+
+  --ease-emerge:  cubic-bezier(0.22,1,0.36,1);
+  --ease-glide:   cubic-bezier(0.4,0,0.2,1);
+  --ease-settle:  cubic-bezier(0.34,1.56,0.64,1);
+  --ease-whisper: cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:16px;
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{cursor:pointer;border:none;background:none;font:inherit}
+input,select{font:inherit}
+
+/* ─── NOISE TEXTURE ──────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+
+/* ─── AMBIENT GLOW ORBS ──────────────────────────────────── */
+.orb{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:0;
+  filter:blur(80px);opacity:0.35;
+}
+.orb-1{width:600px;height:600px;background:var(--ai);top:-200px;right:-100px;animation:orb-drift1 20s ease-in-out infinite alternate}
+.orb-2{width:400px;height:400px;background:var(--teal);bottom:-100px;left:-100px;animation:orb-drift2 25s ease-in-out infinite alternate;opacity:0.2}
+.orb-3{width:300px;height:300px;background:#3B82F6;top:40%;left:50%;animation:orb-drift3 18s ease-in-out infinite alternate;opacity:0.15}
+@keyframes orb-drift1{from{transform:translate(0,0)}to{transform:translate(-60px,80px)}}
+@keyframes orb-drift2{from{transform:translate(0,0)}to{transform:translate(80px,-60px)}}
+@keyframes orb-drift3{from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-50%) scale(1.3)}}
+
+/* ─── CURSOR ─────────────────────────────────────────────── */
+#cursor{
+  position:fixed;width:20px;height:20px;
+  border:1.5px solid var(--ai-2);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width 200ms,height 200ms,opacity 200ms;
+  mix-blend-mode:screen;
+}
+body:not(:hover) #cursor{opacity:0}
+#cursor.big{width:40px;height:40px;border-color:var(--teal);background:rgba(0,212,170,0.05)}
+
+/* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:500;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--ai-2);display:inline-flex;align-items:center;gap:8px;
+}
+.eyebrow::before{content:'';width:20px;height:1px;background:var(--ai-2);opacity:0.5}
+h1,h2,h3{font-weight:700;line-height:1.08;letter-spacing:-0.03em}
+h1{font-size:clamp(48px,6vw,84px)}
+h2{font-size:clamp(36px,4vw,60px)}
+h3{font-size:18px}
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.wrap{max-width:1280px;margin:0 auto;padding:0 48px;position:relative;z-index:1}
+section{padding:128px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+
+/* ─── GLASSMORPHISM CARD ─────────────────────────────────── */
+.glass{
+  background:rgba(22,29,43,0.7);
+  border:1px solid var(--border-2);
+  border-radius:20px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 0 0 0.5px rgba(255,255,255,0.04) inset,
+             0 32px 64px rgba(0,0,0,0.4);
+}
+.glass-sm{
+  background:rgba(30,39,54,0.6);
+  border:1px solid var(--border);
+  border-radius:12px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 48px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background 300ms,border-color 300ms;
+  border-bottom:1px solid transparent;
+}
+nav.scrolled{
+  background:rgba(8,11,16,0.88);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-color:var(--border);
+}
+.nav-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:16px;font-weight:500;color:var(--ink);text-decoration:none;
+}
+.nav-logo span{color:var(--ai)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{
+  font-size:14px;color:var(--ink-3);text-decoration:none;
+  transition:color 150ms;
+}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{
+  background:var(--ai);color:var(--ink);
+  padding:9px 20px;border-radius:8px;font-size:14px;font-weight:500;
+  text-decoration:none;transition:transform 150ms,box-shadow 150ms,background 150ms;
+  box-shadow:0 0 20px rgba(124,107,255,0.35);
+}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 0 32px rgba(124,107,255,0.55)}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding-top:80px;position:relative;overflow:hidden;
+}
+/* grid lines */
+#hero::after{
+  content:'';position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+.hero-inner{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:72px;align-items:center;position:relative;z-index:1;width:100%;
+}
+.hero-eyebrow{margin-bottom:28px;opacity:0;transform:translateY(8px);transition:all 400ms var(--ease-emerge)}
+.hero-h1{margin-bottom:24px}
+.hero-h1 .line{display:block;overflow:hidden}
+.hero-h1 .line span{display:block;transform:translateY(105%);transition:transform 720ms var(--ease-emerge)}
+.ai-word{
+  background:linear-gradient(135deg,var(--ai) 0%,var(--ai-2) 50%,var(--teal) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:200% 200%;animation:grad-shift 4s ease-in-out infinite alternate;
+}
+@keyframes grad-shift{from{background-position:0% 50%}to{background-position:100% 50%}}
+.hero-sub{
+  font-size:18px;color:var(--ink-2);max-width:440px;margin-bottom:40px;
+  opacity:0;transform:translateY(12px);transition:all 480ms var(--ease-emerge);line-height:1.7;
+}
+.hero-ctas{
+  display:flex;gap:12px;align-items:center;
+  opacity:0;transform:translateY(10px);transition:all 300ms var(--ease-emerge);
+}
+.btn-primary{
+  background:var(--ai);color:#fff;
+  padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  box-shadow:0 0 24px rgba(124,107,255,0.4),0 0 0 0 rgba(124,107,255,0);
+  transition:transform 150ms,box-shadow 150ms;position:relative;overflow:hidden;
+}
+.btn-primary::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+  opacity:0;transition:opacity 200ms;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(124,107,255,0.6)}
+.btn-primary:hover::before{opacity:1}
+.btn-ghost{
+  color:var(--ink-3);font-size:15px;font-weight:500;
+  padding:14px 20px;border-radius:10px;border:1px solid var(--border-2);
+  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  transition:color 150ms,border-color 150ms,background 150ms;
+}
+.btn-ghost:hover{color:var(--ink);border-color:var(--border-2);background:var(--surface)}
+
+.hero-stats{
+  display:flex;gap:0;margin-top:56px;
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  opacity:0;transform:translateY(8px);transition:all 300ms var(--ease-emerge);
+}
+.hero-stat{flex:1;padding:16px 20px;border-right:1px solid var(--border)}
+.hero-stat:last-child{border-right:none}
+.hero-stat-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:2px}
+.hero-stat-lab{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;text-transform:uppercase}
+
+/* ─── HERO DASHBOARD CARD ────────────────────────────────── */
+.hero-card{
+  opacity:0;transform:translateY(24px) scale(0.97);
+  transition:all 720ms var(--ease-emerge);
+}
+.hero-card.visible{opacity:1;transform:translateY(0) scale(1)}
+.hc-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+}
+.hc-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,170,0.1);color:var(--teal);
+  padding:4px 10px;border-radius:100px;
+  font-size:11px;font-weight:500;font-family:'JetBrains Mono',monospace;
+  border:1px solid rgba(0,212,170,0.2);
+}
+.pulse{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+.hc-score{font-size:12px;color:var(--ink-4);font-family:'JetBrains Mono',monospace}
+.hc-score span{color:var(--ai-2)}
+.hc-body{padding:20px}
+.hc-balance{font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-2px;margin-bottom:4px}
+.hc-balance-sub{font-size:13px;color:var(--teal);margin-bottom:16px;font-weight:500}
+.hc-chart{width:100%;height:80px;margin-bottom:16px}
+.hc-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hc-tile{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+  opacity:0;transform:translateY(6px);transition:all 400ms var(--ease-emerge);
+}
+.hc-tile.visible{opacity:1;transform:translateY(0)}
+.hc-tile-lab{font-size:10px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.hc-tile-val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.pos{color:var(--teal)}
+.warn{color:var(--gold)}
+.bad{color:var(--red)}
+
+/* ─── REVEALS ────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 600ms var(--ease-emerge),transform 600ms var(--ease-emerge)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:80ms}.d2{transition-delay:160ms}.d3{transition-delay:240ms}.d4{transition-delay:320ms}.d5{transition-delay:400ms}
+
+/* ─── SECTION HEADERS ────────────────────────────────────── */
+.section-header{margin-bottom:64px}
+.section-header .eyebrow{margin-bottom:20px}
+.section-header h2{margin-bottom:16px}
+.section-header p{font-size:18px;color:var(--ink-2);max-width:560px;line-height:1.7}
+.centered{text-align:center;align-items:center}
+.centered p{margin:0 auto}
+
+/* ─── FEATURE CARDS GRID ─────────────────────────────────── */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  padding:28px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--border);
+  transition:border-color 200ms,transform 200ms,box-shadow 200ms;
+  position:relative;overflow:hidden;
+}
+.feat-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top left, var(--ai-glow-2) 0%, transparent 70%);
+  opacity:0;transition:opacity 300ms;
+}
+.feat-card:hover{border-color:rgba(124,107,255,0.3);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.3)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{
+  width:44px;height:44px;border-radius:12px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  background:var(--ai-glow);border:1px solid rgba(124,107,255,0.2);
+}
+.feat-card h3{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--ink)}
+.feat-card p{font-size:13px;color:var(--ink-3);line-height:1.6;margin:0}
+
+/* ─── §2 DASHBOARD ───────────────────────────────────────── */
+#smart-dashboard{background:var(--bg)}
+.dashboard-panel{padding:0}
+.dp-topbar{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.dp-dot{width:10px;height:10px;border-radius:50%}
+.dp-body{padding:24px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.metric-tile{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:12px;padding:16px;
+}
+.mt-lab{font-size:10px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.mt-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.5px}
+.mt-sub{font-size:12px;color:var(--teal);margin-top:2px}
+
+.alloc-row{
+  display:flex;align-items:center;gap:16px;
+  padding:16px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border);
+}
+
+/* ─── §3 AI CHAT ─────────────────────────────────────────── */
+#ai-chat{background:var(--bg-2)}
+.ai-panel{overflow:hidden}
+.ai-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:rgba(124,107,255,0.04);
+}
+.ai-logo-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--ai),#5B4FD4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff;
+  box-shadow:0 0 12px rgba(124,107,255,0.4);
+}
+.ai-header-title{font-size:14px;font-weight:600}
+.ai-header-sub{font-size:11px;color:var(--ink-4)}
+.ai-online{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--teal);font-family:'JetBrains Mono',monospace}
+
+.ai-messages{padding:20px;display:flex;flex-direction:column;gap:14px;min-height:280px}
+.ai-msg{max-width:88%}
+.ai-msg.user{align-self:flex-end}
+.ai-bubble-user{
+  background:linear-gradient(135deg,var(--ai),#5B4FD4);
+  color:#fff;padding:11px 15px;border-radius:16px 16px 4px 16px;
+  font-size:14px;line-height:1.5;
+  box-shadow:0 4px 16px rgba(124,107,255,0.25);
+}
+.ai-bubble-bot{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--ink-2);padding:11px 15px;border-radius:16px 16px 16px 4px;
+  font-size:14px;line-height:1.5;
+}
+.ai-result-card{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:12px;padding:13px 15px;margin-top:8px;
+  display:flex;align-items:flex-start;gap:11px;
+  opacity:0;transform:translateY(10px);
+  transition:opacity 400ms var(--ease-emerge),transform 400ms var(--ease-emerge),
+             border-color 200ms,box-shadow 200ms;
+}
+.ai-result-card.visible{opacity:1;transform:translateY(0)}
+.ai-result-card:hover{border-color:rgba(124,107,255,0.3);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.arc-icon{font-size:17px;margin-top:1px;flex-shrink:0}
+.arc-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.arc-desc{font-size:12px;color:var(--ink-3);line-height:1.5}
+.arc-tag{
+  display:inline-block;margin-top:5px;
+  background:var(--ai-glow);color:var(--ai-2);border:1px solid rgba(124,107,255,0.2);
+  padding:2px 8px;border-radius:100px;font-size:10px;font-weight:500;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.ai-input-row{
+  padding:14px 16px;border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;
+  background:rgba(0,0,0,0.2);
+}
+.ai-kbd{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:3px 8px;font-size:11px;
+  font-family:'JetBrains Mono',monospace;color:var(--ink-3);white-space:nowrap;
+}
+.ai-input{
+  flex:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;font-size:14px;
+  color:var(--ink);outline:none;
+  transition:border-color 150ms,box-shadow 150ms;
+}
+.ai-input::placeholder{color:var(--ink-4)}
+.ai-input:focus{border-color:rgba(124,107,255,0.4);box-shadow:0 0 0 3px rgba(124,107,255,0.1)}
+.ai-send-btn{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--ai);display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:#fff;transition:transform 150ms,box-shadow 150ms;
+  box-shadow:0 0 12px rgba(124,107,255,0.3);
+}
+.ai-send-btn:hover{transform:scale(1.08);box-shadow:0 0 20px rgba(124,107,255,0.5)}
+
+/* ─── §4 READINESS ───────────────────────────────────────── */
+#readiness{background:var(--bg)}
+.readiness-card{padding:32px}
+.score-display{text-align:center;padding:28px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.score-num{
+  font-size:80px;font-weight:700;font-variant-numeric:tabular-nums;
+  line-height:1;letter-spacing:-3px;margin-bottom:8px;
+  transition:color 600ms var(--ease-glide);
+}
+.score-num.low{color:var(--red)}
+.score-num.mid{color:var(--gold)}
+.score-num.high{color:var(--teal)}
+.score-sub{font-size:14px;color:var(--ink-3);margin-bottom:20px}
+.score-track{
+  max-width:280px;margin:0 auto 12px;
+  background:rgba(255,255,255,0.06);border-radius:100px;height:6px;overflow:hidden;
+}
+.score-fill{
+  height:100%;border-radius:100px;
+  background:linear-gradient(90deg,var(--red),var(--gold) 50%,var(--teal));
+  background-size:280px 100%;transition:width 700ms var(--ease-whisper);
+}
+.score-range{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;max-width:280px;margin:0 auto 24px}
+
+.slider-group{margin-bottom:20px}
+.slider-top{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:var(--ink-2)}
+.slider-top span:last-child{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ai-2)}
+input[type=range]{
+  width:100%;height:4px;border-radius:100px;outline:none;
+  background:var(--surface-2);accent-color:var(--ai);appearance:none;-webkit-appearance:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  background:#fff;border-radius:50%;border:2px solid var(--ai);
+  box-shadow:0 2px 8px rgba(0,0,0,0.4),0 0 0 4px rgba(124,107,255,0.15);
+}
+.slider-hint{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-align:center;margin-top:6px}
+
+.factor-rows{display:flex;flex-direction:column;gap:6px;margin-top:20px}
+.factor-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.factor-row:last-child{border-bottom:none}
+.factor-label{font-size:12px;color:var(--ink-3);width:110px;flex-shrink:0}
+.factor-track{flex:1;margin:0 12px;background:rgba(255,255,255,0.06);border-radius:100px;height:3px;overflow:hidden}
+.factor-fill{height:100%;border-radius:100px;background:var(--ai);transition:width 600ms var(--ease-whisper)}
+.factor-val{font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace;color:var(--ink-3);width:32px;text-align:right}
+
+/* ─── §5 ENROLLMENT ──────────────────────────────────────── */
+#enrollment{background:var(--bg-2)}
+.enroll-card{overflow:hidden}
+.enroll-progress{
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  background:rgba(124,107,255,0.04);
+}
+.step-dots{display:flex;gap:6px}
+.step-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--surface-2);
+  border:1px solid var(--border-2);
+  transition:background 250ms,transform 250ms,border-color 250ms;
+}
+.step-dot.active{background:var(--ai);border-color:var(--ai);transform:scale(1.35)}
+.step-dot.done{background:var(--teal);border-color:var(--teal)}
+.step-label{font-size:12px;color:var(--ink-4);font-family:'JetBrains Mono',monospace}
+.step-label span{color:var(--ink-2);font-weight:500}
+
+.enroll-body{padding:28px}
+.enroll-step{display:none}
+.enroll-step.active{display:block}
+.step-title{font-size:19px;font-weight:700;letter-spacing:-0.3px;margin-bottom:6px}
+.step-subtitle{font-size:14px;color:var(--ink-3);margin-bottom:22px}
+
+.ai-tip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--ai-glow);border:1px solid rgba(124,107,255,0.2);
+  border-radius:8px;padding:9px 14px;font-size:13px;color:var(--ink-2);
+  margin-bottom:18px;
+}
+.ai-tip strong{color:var(--ai-2)}
+
+.rate-picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.rate-btn{
+  padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;
+  border:1px solid var(--border-2);color:var(--ink-3);background:var(--surface);
+  font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;
+  transition:border-color 150ms,color 150ms,background 150ms,box-shadow 150ms;
+}
+.rate-btn:hover{border-color:rgba(124,107,255,0.4);color:var(--ink-2)}
+.rate-btn.selected{border-color:var(--ai);color:var(--ai-2);background:var(--ai-glow);box-shadow:0 0 12px rgba(124,107,255,0.2)}
+
+.rate-preview-box{
+  padding:14px;background:var(--bg-3);border-radius:10px;
+  border:1px solid var(--border);font-size:13px;color:var(--ink-3);
+}
+.rate-preview-box strong{color:var(--ink)}
+.rate-preview-box .accent{color:var(--teal)}
+
+.fund-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.fund-opt{
+  display:flex;align-items:center;gap:14px;padding:13px 16px;
+  border:1px solid var(--border);border-radius:12px;cursor:pointer;background:var(--surface);
+  transition:border-color 150ms,background 150ms,box-shadow 150ms;
+}
+.fund-opt:hover{border-color:rgba(124,107,255,0.3)}
+.fund-opt.selected{border-color:var(--ai);background:var(--ai-glow);box-shadow:0 0 16px rgba(124,107,255,0.15)}
+.fund-radio{
+  width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:border-color 150ms,background 150ms;
+}
+.fund-opt.selected .fund-radio{border-color:var(--ai);background:var(--ai)}
+.fund-opt.selected .fund-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:#fff}
+.fund-name{font-size:14px;font-weight:600;margin-bottom:2px;color:var(--ink)}
+.fund-desc{font-size:12px;color:var(--ink-3)}
+.fund-badge{margin-left:auto;font-size:10px;font-weight:500;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:var(--ink-3);white-space:nowrap}
+
+.review-table{display:flex;flex-direction:column}
+.review-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.review-row:last-child{border-bottom:none}
+.review-key{font-size:13px;color:var(--ink-3)}
+.review-val{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.review-val.good{color:var(--teal)}
+
+.field-label{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px}
+.field-input{
+  width:100%;padding:11px 14px;border:1px solid var(--border-2);border-radius:8px;
+  font-size:14px;color:var(--ink);background:var(--surface);outline:none;
+  transition:border-color 150ms,box-shadow 150ms;margin-bottom:12px;
+}
+.field-input:focus{border-color:rgba(124,107,255,0.4);box-shadow:0 0 0 3px rgba(124,107,255,0.1)}
+
+.enroll-footer{
+  padding:18px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(0,0,0,0.15);
+}
+.enroll-back{font-size:14px;color:var(--ink-4);cursor:pointer;transition:color 150ms}
+.enroll-back:hover{color:var(--ink-2)}
+.enroll-next{
+  background:var(--ai);color:#fff;padding:11px 22px;border-radius:8px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  box-shadow:0 0 16px rgba(124,107,255,0.3);
+  transition:transform 150ms,box-shadow 150ms,background 150ms;
+}
+.enroll-next:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(124,107,255,0.5)}
+.enroll-next.success{background:var(--teal);box-shadow:0 0 16px rgba(0,212,170,0.3)}
+
+.stats-strip{
+  display:flex;margin-top:32px;
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;
+}
+.stat-cell{flex:1;padding:18px 20px;text-align:center;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.stat-big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:3px;letter-spacing:-0.5px;color:var(--ai-2)}
+.stat-small{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px}
+
+/* ─── §6 TRANSACTIONS ────────────────────────────────────── */
+#transactions{background:var(--bg)}
+.tx-panel{padding:0;overflow:hidden}
+.tx-tabs{
+  display:flex;gap:4px;padding:16px 20px 0;background:rgba(124,107,255,0.04);
+  border-bottom:1px solid var(--border);
+}
+.tx-tab{
+  flex:none;padding:9px 16px;border-radius:8px 8px 0 0;font-size:13px;font-weight:500;
+  cursor:pointer;color:var(--ink-4);border:1px solid transparent;border-bottom:none;
+  transition:color 150ms,background 150ms,border-color 150ms;
+}
+.tx-tab.active{color:var(--ink);background:var(--bg-3);border-color:var(--border)}
+.tx-body{display:none;padding:24px}
+.tx-body.active{display:block}
+
+.eligibility{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:var(--teal-glow);
+  border:1px solid rgba(0,212,170,0.2);border-radius:8px;
+  font-size:13px;color:var(--teal);margin-bottom:18px;
+}
+
+.tx-amount-label{font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px}
+.tx-amount-input{
+  width:100%;background:var(--surface);border:1px solid var(--border-2);
+  border-radius:8px;padding:12px 16px;font-size:22px;font-weight:700;
+  font-variant-numeric:tabular-nums;color:var(--ink);outline:none;margin-bottom:18px;
+  transition:border-color 150ms,box-shadow 150ms;
+}
+.tx-amount-input:focus{border-color:rgba(124,107,255,0.4);box-shadow:0 0 0 3px rgba(124,107,255,0.1)}
+
+.impact-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.impact-tile{
+  background:var(--bg-3);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+}
+.it-lab{font-size:10px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.it-val{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+
+.bar-section{margin-bottom:18px}
+.bar-row{margin-bottom:10px}
+.bar-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-bottom:4px}
+.bar-labels span{font-weight:600;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+.bar-track{background:rgba(255,255,255,0.05);border-radius:100px;height:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;transition:width 400ms var(--ease-glide)}
+.bar-fill.primary{background:linear-gradient(90deg,var(--ai),var(--teal))}
+.bar-fill.secondary{background:var(--gold)}
+
+/* ─── FINAL CTA ──────────────────────────────────────────── */
+#final-cta{
+  background:var(--bg-2);
+  position:relative;overflow:hidden;
+}
+#final-cta::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:48px 48px;
+}
+.cta-center{text-align:center;max-width:640px;margin:0 auto;position:relative;z-index:1}
+.cta-center h2{margin-bottom:20px}
+.cta-center p{font-size:18px;color:var(--ink-2);margin-bottom:40px;line-height:1.7}
+.cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
+.checklist{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  border:1px solid var(--border);border-radius:16px;padding:24px;
+  background:rgba(22,29,43,0.5);backdrop-filter:blur(12px);text-align:left;
+}
+.checklist li{
+  display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-2);
+}
+.check-icon{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--teal-glow);border:1px solid rgba(0,212,170,0.25);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.check-icon svg{width:9px;height:9px;stroke:var(--teal);stroke-width:2.5;fill:none}
+
+/* Glow ring behind CTA */
+.cta-glow-ring{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:600px;border-radius:50%;z-index:0;
+  background:radial-gradient(ellipse, rgba(124,107,255,0.08) 0%, transparent 70%);
+  pointer-events:none;animation:ring-breathe 6s ease-in-out infinite;
+}
+@keyframes ring-breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)}}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer{
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:56px 0 40px;
+}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:48px;margin-bottom:48px}
+.footer-brand{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px}
+.footer-brand span{color:var(--ai)}
+.footer-tag{font-size:13px;color:var(--ink-4);line-height:1.6}
+.footer-col-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:2px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:13px;color:var(--ink-3);text-decoration:none;transition:color 150ms}
+.footer-links a:hover{color:var(--ink)}
+.footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-size:12px;color:var(--ink-4);font-family:'JetBrains Mono',monospace}
+.footer-legal{display:flex;gap:20px}
+.footer-legal a{font-size:12px;color:var(--ink-4);text-decoration:none;transition:color 150ms}
+.footer-legal a:hover{color:var(--ink-2)}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:900px){
+  .wrap{padding:0 20px}
+  section{padding:80px 0}
+  .two-col,.hero-inner{grid-template-columns:1fr;gap:48px}
+  h1{font-size:44px}h2{font-size:32px}
+  .cards-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .checklist{grid-template-columns:1fr}
+  .hc-tiles{grid-template-columns:1fr 1fr}
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .impact-tiles{grid-template-columns:1fr 1fr}
+  .stats-strip{flex-direction:column}
+  .stat-cell{border-right:none;border-bottom:1px solid var(--border)}
+  .stat-cell:last-child{border-bottom:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:1ms!important;animation-duration:1ms!important}
+  .reveal,.hero-eyebrow,.hero-sub,.hero-ctas,.hero-stats,.hero-card{opacity:1!important;transform:none!important}
+  .hero-h1 .line span{transform:none!important}
+  .hc-tile{opacity:1!important;transform:none!important}
+  .orb{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient orbs -->
+<div class="orb orb-1" aria-hidden="true"></div>
+<div class="orb orb-2" aria-hidden="true"></div>
+<div class="orb orb-3" aria-hidden="true"></div>
+
+<!-- Custom cursor -->
+<div id="cursor" aria-hidden="true"></div>
+
+<!-- ─── NAV ──────────────────────────────────────────────── -->
+<nav id="nav" role="navigation" aria-label="Main navigation">
+  <a href="#" class="nav-logo">core<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#smart-dashboard">Dashboard</a></li>
+    <li><a href="#ai-chat">Core AI</a></li>
+    <li><a href="#readiness">Readiness</a></li>
+    <li><a href="#enrollment">Enrollment</a></li>
+    <li><a href="#transactions">Transactions</a></li>
+  </ul>
+  <a href="https://corethreepointo.netlify.app/login" class="nav-cta">Start Enrolling</a>
+</nav>
+
+<main>
+
+<!-- ─── §1 HERO ───────────────────────────────────────────── -->
+<section id="hero" aria-label="Hero">
+  <div class="wrap">
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow hero-eyebrow">AI-Powered 401(k) Portal · v3.0</p>
+        <h1 class="hero-h1">
+          <span class="line"><span>Retire</span></span>
+          <span class="line"><span class="ai-word">confident.</span></span>
+        </h1>
+        <p class="hero-sub">A modern 401(k) experience powered by AI that makes retirement planning feel as clear and natural as checking your phone.</p>
+        <div class="hero-ctas">
+          <a href="https://corethreepointo.netlify.app/login" class="btn-primary">
+            Start Enrolling
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M7 3l4 4-4 4"/></svg>
+          </a>
+          <a href="#ai-chat" class="btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M5.5 5L9 7l-3.5 2V5z" fill="currentColor" stroke="none"/></svg>
+            Watch it think
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-val" data-count="142850" data-prefix="$">$0</div>
+            <div class="hero-stat-lab">Avg. participant balance</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val" data-count="48">0k</div>
+            <div class="hero-stat-lab">Active participants</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val">99.9%</div>
+            <div class="hero-stat-lab">Uptime SLA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard card -->
+      <div class="glass hero-card" id="hero-card" aria-label="Live dashboard preview">
+        <div class="hc-topbar">
+          <div class="hc-badge"><span class="pulse"></span>Live balance</div>
+          <div class="hc-score">Readiness <span id="hero-score">78</span>/100</div>
+        </div>
+        <div class="hc-body">
+          <div class="hc-balance tabnum" id="hero-balance">$0</div>
+          <div class="hc-balance-sub">+$3,240 (2.3%) this year</div>
+          <svg class="hc-chart" viewBox="0 0 340 80" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#7C6BFF" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#7C6BFF" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="chart-area" d="M0,70 L40,62 L80,55 L120,50 L160,43 L200,36 L240,27 L280,18 L340,10 L340,80 L0,80 Z" fill="url(#cg)" opacity="0"/>
+            <path id="chart-line" d="M0,70 L40,62 L80,55 L120,50 L160,43 L200,36 L240,27 L280,18 L340,10" fill="none" stroke="url(#lineGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7C6BFF"/>
+                <stop offset="100%" stop-color="#00D4AA"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hc-tiles">
+            <div class="hc-tile" style="transition-delay:0ms">
+              <div class="hc-tile-lab">Contribution</div>
+              <div class="hc-tile-val">6%</div>
+            </div>
+            <div class="hc-tile" style="transition-delay:80ms">
+              <div class="hc-tile-lab">Match</div>
+              <div class="hc-tile-val pos">3%</div>
+            </div>
+            <div class="hc-tile" style="transition-delay:160ms">
+              <div class="hc-tile-lab">Vesting</div>
+              <div class="hc-tile-val">80%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §2 SMART DASHBOARD ────────────────────────────────── -->
+<section id="smart-dashboard">
+  <div class="wrap">
+    <div class="two-col">
+      <div class="glass dashboard-panel reveal" aria-label="Dashboard panel demo">
+        <div class="dp-topbar">
+          <div class="dp-dot" style="background:#FF5F57"></div>
+          <div class="dp-dot" style="background:#FFBD2E"></div>
+          <div class="dp-dot" style="background:#28C840"></div>
+          <span style="font-size:12px;color:var(--ink-4);font-family:'JetBrains Mono',monospace;margin-left:8px">core — Dashboard</span>
+        </div>
+        <div class="dp-body">
+          <div class="metric-grid">
+            <div class="metric-tile">
+              <div class="mt-lab">Total Balance</div>
+              <div class="mt-val tabnum">$142,850</div>
+              <div class="mt-sub">↑ $3,240 this year</div>
+            </div>
+            <div class="metric-tile">
+              <div class="mt-lab">Projected at 65</div>
+              <div class="mt-val tabnum">$892,400</div>
+              <div class="mt-sub" style="color:var(--ai-2)">On track</div>
+            </div>
+            <div class="metric-tile">
+              <div class="mt-lab">Readiness Score</div>
+              <div class="mt-val" style="color:var(--teal)">78/100</div>
+              <div class="mt-sub">↑ from 71 last Q</div>
+            </div>
+            <div class="metric-tile">
+              <div class="mt-lab">YTD Return</div>
+              <div class="mt-val" style="color:var(--teal)">+7.3%</div>
+              <div class="mt-sub">vs 6.1% benchmark</div>
+            </div>
+          </div>
+          <div class="alloc-row">
+            <svg width="64" height="64" viewBox="0 0 64 64" aria-label="Portfolio allocation chart">
+              <circle cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+              <circle cx="32" cy="32" r="24" fill="none" stroke="#7C6BFF" stroke-width="7" stroke-dasharray="90 60" stroke-dashoffset="0" transform="rotate(-90 32 32)"/>
+              <circle cx="32" cy="32" r="24" fill="none" stroke="#60A5FA" stroke-width="7" stroke-dasharray="0 150" stroke-dashoffset="-90" transform="rotate(-90 32 32)" class="donut-seg" data-target="44"/>
+              <circle cx="32" cy="32" r="24" fill="none" stroke="#F5A623" stroke-width="7" stroke-dasharray="0 150" stroke-dashoffset="-134" transform="rotate(-90 32 32)" class="donut-seg" data-target="17"/>
+            </svg>
+            <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:#7C6BFF;display:inline-block;flex-shrink:0"></span><span style="color:var(--ink-3)">Stocks</span><span style="margin-left:auto;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px">60%</span></div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:#60A5FA;display:inline-block;flex-shrink:0"></span><span style="color:var(--ink-3)">Bonds</span><span style="margin-left:auto;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px">29%</span></div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span style="width:7px;height:7px;border-radius:50%;background:#F5A623;display:inline-block;flex-shrink:0"></span><span style="color:var(--ink-3)">Cash</span><span style="margin-left:auto;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px">11%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-header">
+          <p class="eyebrow reveal">Smart Dashboard</p>
+          <h2 class="reveal d1">Everything you own,<br>one screen.</h2>
+          <p class="reveal d2">Balance, projections, readiness score, portfolio allocation — all live. No PDFs, no digging, no guesswork.</p>
+        </div>
+        <div class="cards-grid" style="grid-template-columns:1fr;gap:12px">
+          <div class="feat-card reveal d2">
+            <div class="feat-icon">⚡</div>
+            <h3>Live balance & projections</h3>
+            <p>Real-time data, no manual refresh. Your number is always current.</p>
+          </div>
+          <div class="feat-card reveal d3">
+            <div class="feat-icon">🎯</div>
+            <h3>Readiness score</h3>
+            <p>Your retirement health in one AI-computed number, updated continuously.</p>
+          </div>
+          <div class="feat-card reveal d4">
+            <div class="feat-icon">📊</div>
+            <h3>Portfolio allocation</h3>
+            <p>Visual breakdown with fund-level detail and one-click rebalancing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §3 CORE AI ────────────────────────────────────────── -->
+<section id="ai-chat">
+  <div class="wrap">
+    <div class="two-col" style="grid-template-columns:1fr 1.15fr">
+      <div>
+        <div class="section-header">
+          <p class="eyebrow reveal">Core AI</p>
+          <h2 class="reveal d1">Ask anything.<br>Get a real answer.</h2>
+          <p class="reveal d2">Plain English questions about loan limits, Roth vs traditional, contribution impact. Answers grounded in your actual account — not generic advice.</p>
+        </div>
+        <div class="cards-grid" style="grid-template-columns:1fr;gap:12px">
+          <div class="feat-card reveal d2">
+            <div class="feat-icon">💬</div>
+            <h3>Natural language queries</h3>
+            <p>Ask like you'd ask a financial advisor — no jargon required.</p>
+          </div>
+          <div class="feat-card reveal d3">
+            <div class="feat-icon">🧮</div>
+            <h3>Live calculators</h3>
+            <p>Every answer ships with real numbers, not estimates or ranges.</p>
+          </div>
+          <div class="feat-card reveal d4">
+            <div class="feat-icon">🎤</div>
+            <h3>Voice input</h3>
+            <p>Ask out loud. The same speech API powering the product — live here.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass ai-panel reveal d1">
+        <div class="ai-header">
+          <div class="ai-logo-mark">c.</div>
+          <div>
+            <div class="ai-header-title">Core AI</div>
+            <div class="ai-header-sub">Powered by your account data</div>
+          </div>
+          <div class="ai-online"><span class="pulse"></span>Online</div>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg user">
+            <div class="ai-bubble-user">What happens if I increase contributions by 2%?</div>
+          </div>
+          <div class="ai-msg" style="max-width:100%">
+            <div class="ai-bubble-bot" style="margin-bottom:6px">Based on your current balance of $142,850 and age 36, here's the full picture:</div>
+            <div class="ai-result-card" id="air-1">
+              <div class="arc-icon">📈</div>
+              <div>
+                <div class="arc-title">Projected balance +$68,400</div>
+                <div class="arc-desc">By retirement at 65, based on your current trajectory and 7% avg return</div>
+                <span class="arc-tag">Projection</span>
+              </div>
+            </div>
+            <div class="ai-result-card" id="air-2">
+              <div class="arc-icon">💳</div>
+              <div>
+                <div class="arc-title">Take-home pay −$84/month</div>
+                <div class="arc-desc">After pre-tax savings — less than a dinner out</div>
+                <span class="arc-tag">Tax estimate</span>
+              </div>
+            </div>
+            <div class="ai-result-card" id="air-3">
+              <div class="arc-icon">🎯</div>
+              <div>
+                <div class="arc-title">New total: 8% + 3% match = 11%</div>
+                <div class="arc-desc">Industry benchmark is 10–15%. You'd be right on target.</div>
+                <span class="arc-tag">Benchmark</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-input-row">
+          <kbd class="ai-kbd">⌘K</kbd>
+          <input class="ai-input" id="ai-input" type="text" placeholder="Ask about your retirement…" aria-label="Ask Core AI"/>
+          <button class="ai-send-btn" id="ai-send-btn" aria-label="Send">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §4 READINESS ENGINE ───────────────────────────────── -->
+<section id="readiness">
+  <div class="wrap">
+    <div class="two-col">
+      <div>
+        <div class="section-header">
+          <p class="eyebrow reveal">Readiness Engine</p>
+          <h2 class="reveal d1">Drag a slider.<br>Watch your future change.</h2>
+          <p class="reveal d2">Your retirement score updates in real time as you adjust contribution rates and retirement age. From 42 to 80 — see exactly what it takes.</p>
+        </div>
+        <div class="stats-strip reveal d3">
+          <div class="stat-cell">
+            <div class="stat-big">+38pts</div>
+            <div class="stat-small">avg score lift</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-big">3 min</div>
+            <div class="stat-small">to find your number</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-big">94%</div>
+            <div class="stat-small">take action after</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass readiness-card reveal d1">
+        <div class="score-display">
+          <div class="score-num low tabnum" id="score-num">42</div>
+          <div class="score-sub" id="score-sub">Needs attention — let's improve this</div>
+          <div class="score-track">
+            <div class="score-fill" id="score-fill" style="width:42%"></div>
+          </div>
+          <div class="score-range"><span>0</span><span>100</span></div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>Contribution rate</span>
+            <span id="contrib-val">6%</span>
+          </div>
+          <input type="range" id="contrib-slider" min="1" max="20" value="6" aria-label="Contribution rate"/>
+          <div class="slider-hint">Drag to see your score update live</div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>Retirement age</span>
+            <span id="age-val">65</span>
+          </div>
+          <input type="range" id="age-slider" min="55" max="75" value="65" aria-label="Retirement age"/>
+        </div>
+        <div class="factor-rows">
+          <div class="factor-row">
+            <span class="factor-label">Savings rate</span>
+            <div class="factor-track"><div class="factor-fill" id="rf-savings" style="width:40%"></div></div>
+            <span class="factor-val" id="rf-savings-val">40%</span>
+          </div>
+          <div class="factor-row">
+            <span class="factor-label">Time horizon</span>
+            <div class="factor-track"><div class="factor-fill" id="rf-time" style="width:72%"></div></div>
+            <span class="factor-val" id="rf-time-val">72%</span>
+          </div>
+          <div class="factor-row">
+            <span class="factor-label">Diversification</span>
+            <div class="factor-track"><div class="factor-fill" id="rf-div" style="width:65%"></div></div>
+            <span class="factor-val" id="rf-div-val">65%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §5 ENROLLMENT ─────────────────────────────────────── -->
+<section id="enrollment">
+  <div class="wrap">
+    <div class="two-col" style="grid-template-columns:1fr 1.1fr">
+      <div>
+        <div class="section-header">
+          <p class="eyebrow reveal">5-Minute Enrollment</p>
+          <h2 class="reveal d1">Join your plan<br>in minutes.</h2>
+          <p class="reveal d2">6 steps. 4 min 32 sec average. 94% finish on the first try. AI suggests your optimal plan and risk mix before you begin.</p>
+        </div>
+        <div class="cards-grid" style="grid-template-columns:1fr;gap:12px">
+          <div class="feat-card reveal d2">
+            <div class="feat-icon">🤖</div>
+            <h3>AI-suggested plan</h3>
+            <p>Optimal contribution rate and fund mix, personalized to your situation.</p>
+          </div>
+          <div class="feat-card reveal d3">
+            <div class="feat-icon">✅</div>
+            <h3>94% first-try completion</h3>
+            <p>The clearest enrollment flow in the industry. No dead ends.</p>
+          </div>
+        </div>
+        <div class="stats-strip reveal d4" style="margin-top:24px">
+          <div class="stat-cell">
+            <div class="stat-big">4:32</div>
+            <div class="stat-small">avg. completion</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-big">94%</div>
+            <div class="stat-small">first-try rate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass enroll-card reveal d1">
+        <div class="enroll-progress">
+          <div class="step-dots" id="step-dots">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+          <div class="step-label"><span id="step-label-text">Step 1</span> of 4</div>
+          <div style="margin-left:auto;font-size:11px;color:var(--ink-4);font-family:'JetBrains Mono',monospace">4 min 32 sec avg</div>
+        </div>
+        <div class="enroll-body">
+          <!-- Step 1 -->
+          <div class="enroll-step active" data-step="0">
+            <div class="ai-tip"><span>🤖</span> Core AI suggests <strong>6%</strong> to capture your full employer match</div>
+            <div class="step-title">Set your contribution rate</div>
+            <div class="step-subtitle">What % of your salary goes toward retirement?</div>
+            <div class="rate-picker" id="rate-picker">
+              <button class="rate-btn" data-rate="3">3%</button>
+              <button class="rate-btn selected" data-rate="6">6%</button>
+              <button class="rate-btn" data-rate="8">8%</button>
+              <button class="rate-btn" data-rate="10">10%</button>
+              <button class="rate-btn" data-rate="15">15%</button>
+            </div>
+            <div class="rate-preview-box">
+              At <strong id="rate-preview">6%</strong>, you receive the full <span class="accent">3% employer match</span>. Combined: <strong id="rate-total">9%</strong> of salary.
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="enroll-step" data-step="1">
+            <div class="ai-tip"><span>🤖</span> Core AI recommends <strong>Moderate Growth</strong> for your age</div>
+            <div class="step-title">Choose your investment strategy</div>
+            <div class="step-subtitle">How would you like your funds invested?</div>
+            <div class="fund-options" id="fund-options">
+              <div class="fund-opt" data-fund="conservative">
+                <div class="fund-radio"></div>
+                <div><div class="fund-name">Conservative</div><div class="fund-desc">60% bonds, 40% stocks — steady growth</div></div>
+                <div class="fund-badge">Low risk</div>
+              </div>
+              <div class="fund-opt selected" data-fund="moderate">
+                <div class="fund-radio"></div>
+                <div><div class="fund-name">Moderate Growth</div><div class="fund-desc">60% stocks, 40% bonds — balanced</div></div>
+                <div class="fund-badge">Med risk</div>
+              </div>
+              <div class="fund-opt" data-fund="aggressive">
+                <div class="fund-radio"></div>
+                <div><div class="fund-name">Aggressive Growth</div><div class="fund-desc">90% stocks — maximum potential</div></div>
+                <div class="fund-badge">High risk</div>
+              </div>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="enroll-step" data-step="2">
+            <div class="step-title">Name your beneficiary</div>
+            <div class="step-subtitle">Who should receive your account if something happens to you?</div>
+            <label class="field-label">Full name</label>
+            <input class="field-input" type="text" placeholder="e.g. Jane Smith" aria-label="Beneficiary name"/>
+            <label class="field-label">Relationship</label>
+            <select class="field-input" aria-label="Relationship to beneficiary">
+              <option>Spouse</option><option>Child</option><option>Parent</option><option>Sibling</option><option>Other</option>
+            </select>
+          </div>
+          <!-- Step 4 -->
+          <div class="enroll-step" data-step="3">
+            <div class="step-title">Review your elections</div>
+            <div class="step-subtitle">Everything looks good. Confirm to complete enrollment.</div>
+            <div class="review-table">
+              <div class="review-row"><span class="review-key">Contribution rate</span><span class="review-val" id="review-rate">6%</span></div>
+              <div class="review-row"><span class="review-key">Employer match</span><span class="review-val good">3% (full match)</span></div>
+              <div class="review-row"><span class="review-key">Investment strategy</span><span class="review-val" id="review-strategy">Moderate Growth</span></div>
+              <div class="review-row"><span class="review-key">Effective date</span><span class="review-val">Next pay period</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="enroll-footer">
+          <span class="enroll-back" id="enroll-back">← Back</span>
+          <button class="enroll-next" id="enroll-next">Continue →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §6 TRANSACTIONS ───────────────────────────────────── -->
+<section id="transactions">
+  <div class="wrap">
+    <div class="two-col" style="grid-template-columns:1fr 1.1fr">
+      <div>
+        <div class="section-header">
+          <p class="eyebrow reveal">Guided Transactions</p>
+          <h2 class="reveal d1">Every move,<br>guided and clear.</h2>
+          <p class="reveal d2">Loans, withdrawals, rollovers, fund transfers — all with instant eligibility checks, tax previews, and zero paperwork.</p>
+        </div>
+        <div class="cards-grid" style="grid-template-columns:1fr;gap:12px">
+          <div class="feat-card reveal d2">
+            <div class="feat-icon">🏦</div>
+            <h3>Instant eligibility checks</h3>
+            <p>Know if you qualify before you start filling out forms.</p>
+          </div>
+          <div class="feat-card reveal d3">
+            <div class="feat-icon">💰</div>
+            <h3>Tax impact preview</h3>
+            <p>See the real cost — penalties, withholding, net amount — before you commit.</p>
+          </div>
+          <div class="feat-card reveal d4">
+            <div class="feat-icon">📄</div>
+            <h3>Zero paperwork</h3>
+            <p>Everything digital, every time. No fax, no mail, no waiting.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass tx-panel reveal d1">
+        <div class="tx-tabs">
+          <button class="tx-tab active" data-tab="loan">Loan</button>
+          <button class="tx-tab" data-tab="withdrawal">Withdrawal</button>
+          <button class="tx-tab" data-tab="rollover">Rollover</button>
+        </div>
+
+        <div class="tx-body active" data-body="loan">
+          <div class="eligibility">✓ You're eligible — max loan: <strong style="margin-left:4px">$28,425</strong></div>
+          <label class="tx-amount-label">Loan amount</label>
+          <input class="tx-amount-input tabnum" id="loan-amount" type="number" value="18000" min="1000" max="28425" aria-label="Loan amount"/>
+          <div class="impact-tiles">
+            <div class="impact-tile"><div class="it-lab">Monthly payment</div><div class="it-val tabnum" id="loan-payment">$568</div></div>
+            <div class="impact-tile"><div class="it-lab">Retirement impact</div><div class="it-val tabnum warn" id="loan-impact">−$42k</div></div>
+            <div class="impact-tile"><div class="it-lab">Interest rate</div><div class="it-val tabnum">5.25%</div></div>
+          </div>
+          <div class="bar-section">
+            <div class="bar-row">
+              <div class="bar-labels"><span>Without loan</span><span>$892,400</span></div>
+              <div class="bar-track"><div class="bar-fill primary" style="width:100%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-labels"><span>With loan</span><span id="bar-with-label">$850,200</span></div>
+              <div class="bar-track"><div class="bar-fill secondary" id="bar-with" style="width:95.3%"></div></div>
+            </div>
+          </div>
+          <button class="enroll-next" style="width:100%">Apply for loan</button>
+        </div>
+
+        <div class="tx-body" data-body="withdrawal">
+          <div class="eligibility">✓ Hardship withdrawal available</div>
+          <label class="tx-amount-label">Withdrawal amount</label>
+          <input class="tx-amount-input tabnum" type="number" value="5000" aria-label="Withdrawal amount"/>
+          <div class="impact-tiles">
+            <div class="impact-tile"><div class="it-lab">Federal tax</div><div class="it-val bad">$1,100</div></div>
+            <div class="impact-tile"><div class="it-lab">10% penalty</div><div class="it-val bad">$500</div></div>
+            <div class="impact-tile"><div class="it-lab">You receive</div><div class="it-val pos">$3,400</div></div>
+          </div>
+          <button class="enroll-next" style="width:100%">Submit withdrawal</button>
+        </div>
+
+        <div class="tx-body" data-body="rollover">
+          <div class="eligibility">✓ Direct rollover — no tax withholding</div>
+          <label class="tx-amount-label">Rollover amount</label>
+          <input class="tx-amount-input tabnum" type="number" value="45000" aria-label="Rollover amount"/>
+          <div class="impact-tiles">
+            <div class="impact-tile"><div class="it-lab">Tax withheld</div><div class="it-val pos">$0</div></div>
+            <div class="impact-tile"><div class="it-lab">Processing</div><div class="it-val">3–5 days</div></div>
+            <div class="impact-tile"><div class="it-lab">New balance</div><div class="it-val pos">$187,850</div></div>
+          </div>
+          <button class="enroll-next" style="width:100%">Initiate rollover</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ─────────────────────────────────────────── -->
+<section id="final-cta">
+  <div class="cta-glow-ring" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="cta-center">
+      <p class="eyebrow reveal" style="justify-content:center;margin-bottom:20px">Ready</p>
+      <h2 class="reveal d1" style="margin-bottom:20px">Ready to<br><span class="ai-word">retire confident?</span></h2>
+      <p class="reveal d2">Join 48,000+ participants already using core to plan, grow, and protect their retirement savings.</p>
+      <div class="cta-buttons reveal d3">
+        <a href="https://corethreepointo.netlify.app/login" class="btn-primary" style="font-size:16px;padding:16px 32px">
+          Start Free Enrollment
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M7 3l4 4-4 4"/></svg>
+        </a>
+        <a href="#" class="btn-ghost" style="font-size:16px;padding:16px 24px">Talk to Sales</a>
+      </div>
+      <ul class="checklist reveal d4">
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>Guided enrollment in under 5 minutes</li>
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>AI-powered retirement planning</li>
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>Real-time readiness score</li>
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>SOC 2 Type II · ERISA compliant</li>
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>Mobile-first, fully responsive</li>
+        <li><div class="check-icon"><svg viewBox="0 0 9 7"><polyline points="1,3.5 3,5.5 8,1" class="check-draw"/></svg></div>Zero paperwork, fully digital</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ─── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">core<span>.</span></div>
+        <div class="footer-tag">The AI-powered retirement portal that turns<br>anxiety into agency.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Product</div>
+        <ul class="footer-links">
+          <li><a href="#smart-dashboard">Smart Dashboard</a></li>
+          <li><a href="#ai-chat">Core AI</a></li>
+          <li><a href="#readiness">Readiness Engine</a></li>
+          <li><a href="#enrollment">Enrollment</a></li>
+          <li><a href="#transactions">Transactions</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Docs</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 core. All rights reserved.</div>
+      <div class="footer-legal">
+        <a href="#">ERISA Compliant</a>
+        <a href="#">SOC 2 Type II</a>
+        <a href="#">WCAG 2.2 AA</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+.check-draw{stroke:var(--teal);stroke-width:2;fill:none;stroke-dasharray:14;stroke-dashoffset:14;transition:stroke-dashoffset 400ms var(--ease-emerge)}
+.reveal.visible .check-draw{stroke-dashoffset:0}
+</style>
+
+<script>
+/* ─── CURSOR ──────────────────────────────────────────────── */
+const cursor = document.getElementById('cursor');
+let mx=0,my=0,cx=0,cy=0;
+if(!('ontouchstart' in window)){
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+  (function tick(){cx+=(mx-cx)*0.1;cy+=(my-cy)*0.1;cursor.style.left=cx+'px';cursor.style.top=cy+'px';requestAnimationFrame(tick)})();
+  document.querySelectorAll('button,a,.feat-card,.glass').forEach(el=>{
+    el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+    el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+  });
+} else { cursor.style.display='none'; }
+
+/* ─── NAV SCROLL ──────────────────────────────────────────── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>64),{passive:true});
+
+/* ─── INTERSECTION REVEALS ────────────────────────────────── */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ─── HERO LOAD SEQUENCE ──────────────────────────────────── */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{const e=document.querySelector('.hero-eyebrow');e.style.opacity='1';e.style.transform='translateY(0)'},200);
+  document.querySelectorAll('.hero-h1 .line span').forEach((s,i)=>setTimeout(()=>s.style.transform='translateY(0)',360+i*80));
+  setTimeout(()=>{const s=document.querySelector('.hero-sub');s.style.opacity='1';s.style.transform='translateY(0)'},700);
+  setTimeout(()=>{const c=document.querySelector('.hero-ctas');c.style.opacity='1';c.style.transform='translateY(0)'},880);
+  setTimeout(()=>{const s=document.querySelector('.hero-stats');s.style.opacity='1';s.style.transform='translateY(0)'},1000);
+  setTimeout(()=>document.getElementById('hero-card').classList.add('visible'),500);
+  setTimeout(()=>countUp(document.getElementById('hero-balance'),'$',142850,1100),800);
+  setTimeout(animateChart,900);
+  setTimeout(()=>document.querySelectorAll('.hc-tile').forEach((t,i)=>setTimeout(()=>t.classList.add('visible'),i*80)),1900);
+});
+
+function countUp(el,prefix,target,dur){
+  const start=performance.now();
+  (function f(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-t,3);
+    el.textContent=prefix+Math.round(ease*target).toLocaleString();
+    if(t<1) requestAnimationFrame(f);
+  })(performance.now());
+}
+
+function animateChart(){
+  const line=document.getElementById('chart-line');
+  const area=document.getElementById('chart-area');
+  const len=line.getTotalLength?line.getTotalLength():620;
+  line.style.strokeDasharray=len;line.style.strokeDashoffset=len;
+  line.style.transition='stroke-dashoffset 1400ms cubic-bezier(0.16,1,0.3,1)';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>line.style.strokeDashoffset='0'));
+  setTimeout(()=>{area.style.transition='opacity 480ms ease';area.style.opacity='1';},1400);
+}
+
+/* ─── AI RESULTS REVEAL ───────────────────────────────────── */
+const aiObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    ['air-1','air-2','air-3'].forEach((id,i)=>setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('visible')},300+i*220));
+    aiObs.unobserve(e.target);
+  });
+},{threshold:0.15});
+const aiPanel=document.querySelector('.ai-panel');
+if(aiPanel) aiObs.observe(aiPanel);
+
+/* ─── AI CHAT ─────────────────────────────────────────────── */
+const aiInput=document.getElementById('ai-input');
+const aiSend=document.getElementById('ai-send-btn');
+const aiMessages=document.getElementById('ai-messages');
+
+const canned={
+  roth:[
+    {icon:'⚖️',title:'Roth vs Traditional',desc:'At your income level, Traditional saves ~$1,200/year in taxes now.',tag:'Tax analysis'},
+    {icon:'🔮',title:'Long-term Roth advantage',desc:'If tax rates rise, Roth could save you $45,000+ in retirement.',tag:'Projection'},
+    {icon:'✅',title:'Recommendation',desc:'Consider a 50/50 split for tax diversification.',tag:'Strategy'}
+  ],
+  loan:[
+    {icon:'💳',title:'Loan eligibility',desc:'You can borrow up to $28,425 — 50% of vested balance.',tag:'Eligibility'},
+    {icon:'⚠️',title:'True cost of $18,000 loan',desc:'Reduces retirement balance ~$42,000 due to lost compound growth.',tag:'Impact'},
+    {icon:'💡',title:'Alternative',desc:'An emergency fund might cost less long-term.',tag:'Suggestion'}
+  ],
+  default:[
+    {icon:'💡',title:'Based on your account',desc:'Here is what I found based on your current balance and rate.',tag:'Analysis'},
+    {icon:'📊',title:'Current trajectory',desc:'At your rate, you project $892,400 by age 65.',tag:'Projection'},
+    {icon:'🎯',title:'Recommended action',desc:'Increasing by 2% could add $68,000 to retirement savings.',tag:'Suggestion'}
+  ]
+};
+
+function sendAI(){
+  const q=aiInput.value.trim();if(!q)return;
+  const userDiv=document.createElement('div');userDiv.className='ai-msg user';
+  userDiv.innerHTML=`<div class="ai-bubble-user">${q.replace(/</g,'&lt;')}</div>`;
+  aiMessages.appendChild(userDiv);
+  const responses=/roth|traditional/i.test(q)?canned.roth:/loan|borrow/i.test(q)?canned.loan:canned.default;
+  const botDiv=document.createElement('div');botDiv.style.maxWidth='100%';
+  botDiv.innerHTML=`<div class="ai-bubble-bot" style="margin-bottom:6px">Here's what I found for you:</div>`;
+  responses.forEach((r,i)=>{
+    const card=document.createElement('div');card.className='ai-result-card';
+    card.innerHTML=`<div class="arc-icon">${r.icon}</div><div><div class="arc-title">${r.title}</div><div class="arc-desc">${r.desc}</div><span class="arc-tag">${r.tag}</span></div>`;
+    botDiv.appendChild(card);
+    setTimeout(()=>card.classList.add('visible'),400+i*200);
+  });
+  aiMessages.appendChild(botDiv);
+  aiInput.value='';
+  aiMessages.scrollTop=aiMessages.scrollHeight;
+}
+aiSend.addEventListener('click',sendAI);
+aiInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendAI()});
+
+/* ─── READINESS SLIDERS ───────────────────────────────────── */
+function calcScore(c,a){return Math.round(Math.max(10,Math.min(98,Math.min(c/15*60,60)+Math.max(0,Math.min((a-55)/10*40,40)))))}
+function getLabel(s){return s<40?'Needs attention — let\'s improve this':s<60?'Making progress — keep going':s<80?'On track — looking good':'Excellent — set for retirement'}
+
+function updateScore(){
+  const c=+document.getElementById('contrib-slider').value;
+  const a=+document.getElementById('age-slider').value;
+  const s=calcScore(c,a);
+  const el=document.getElementById('score-num');
+  el.textContent=s;
+  el.className='score-num tabnum '+(s<40?'low':s<70?'mid':'high');
+  document.getElementById('score-fill').style.width=s+'%';
+  document.getElementById('score-sub').textContent=getLabel(s);
+  document.getElementById('contrib-val').textContent=c+'%';
+  document.getElementById('age-val').textContent=a;
+  const sw=Math.min(c/15*100,100);
+  document.getElementById('rf-savings').style.width=sw+'%';
+  document.getElementById('rf-savings-val').textContent=Math.round(sw)+'%';
+  const tw=Math.min((a-55)/20*100,100);
+  document.getElementById('rf-time').style.width=tw+'%';
+  document.getElementById('rf-time-val').textContent=Math.round(tw)+'%';
+}
+document.getElementById('contrib-slider').addEventListener('input',updateScore);
+document.getElementById('age-slider').addEventListener('input',updateScore);
+
+/* ─── ENROLLMENT ──────────────────────────────────────────── */
+let step=0,selRate=6,selFund='moderate';
+const steps=document.querySelectorAll('.enroll-step');
+const dots=document.querySelectorAll('.step-dot');
+const nextBtn=document.getElementById('enroll-next');
+
+function goStep(n){
+  steps.forEach(s=>s.classList.remove('active'));
+  dots.forEach((d,i)=>{d.classList.toggle('active',i===n);d.classList.toggle('done',i<n)});
+  steps[n].classList.add('active');
+  document.getElementById('step-label-text').textContent='Step '+(n+1);
+  step=n;
+  if(n===steps.length-1){
+    nextBtn.textContent='Confirm Enrollment';nextBtn.classList.add('success');
+    document.getElementById('review-rate').textContent=selRate+'%';
+    document.getElementById('review-strategy').textContent=selFund==='conservative'?'Conservative':selFund==='aggressive'?'Aggressive Growth':'Moderate Growth';
+  } else {nextBtn.textContent='Continue →';nextBtn.classList.remove('success')}
+}
+
+nextBtn.addEventListener('click',()=>{
+  if(step<steps.length-1) goStep(step+1);
+  else{nextBtn.textContent='✓ Enrolled';nextBtn.style.background='var(--teal)';nextBtn.disabled=true;}
+});
+document.getElementById('enroll-back').addEventListener('click',()=>{if(step>0)goStep(step-1)});
+
+document.querySelectorAll('.rate-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.rate-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');selRate=+b.dataset.rate;
+    document.getElementById('rate-preview').textContent=selRate+'%';
+    document.getElementById('rate-total').textContent=(selRate+3)+'%';
+  });
+});
+
+document.querySelectorAll('.fund-opt').forEach(o=>{
+  o.addEventListener('click',()=>{
+    document.querySelectorAll('.fund-opt').forEach(x=>x.classList.remove('selected'));
+    o.classList.add('selected');selFund=o.dataset.fund;
+  });
+});
+
+/* ─── LOAN CALCULATOR ─────────────────────────────────────── */
+document.getElementById('loan-amount').addEventListener('input',function(){
+  const amt=+this.value||0;
+  const pmt=Math.round(amt/36*1.0525);
+  const impact=Math.round(amt*2.33);
+  const withLoan=892400-impact;
+  document.getElementById('loan-payment').textContent='$'+pmt.toLocaleString();
+  document.getElementById('loan-impact').textContent='−$'+Math.round(impact/1000)+'k';
+  document.getElementById('loan-impact').className='it-val tabnum '+(impact>50000?'bad':'warn');
+  document.getElementById('bar-with').style.width=(withLoan/892400*100).toFixed(1)+'%';
+  document.getElementById('bar-with-label').textContent='$'+withLoan.toLocaleString();
+});
+
+/* ─── TX TABS ─────────────────────────────────────────────── */
+document.querySelectorAll('.tx-tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tx-tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tx-body').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelector('[data-body="'+t.dataset.tab+'"]').classList.add('active');
+}));
+
+/* ─── MAGNETIC BUTTONS ────────────────────────────────────── */
+document.querySelectorAll('.btn-primary').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    btn.style.transform=`translate(${(e.clientX-r.left-r.width/2)*0.18}px,${(e.clientY-r.top-r.height/2)*0.18}px) translateY(-2px)`;
+  });
+  btn.addEventListener('mouseleave',()=>btn.style.transform='');
+});
+</script>
+</body>
+</html>
