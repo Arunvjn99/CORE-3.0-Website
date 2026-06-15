@@ -39,7 +39,7 @@ export default function Navbar() {
       <div className="px-5 h-13 py-2 flex items-center justify-between">
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-shadow duration-500 group-hover:shadow-glow-blue"
-            style={{ background: "linear-gradient(135deg,#3B82F6,#22D3EE,#8B5CF6)" }}>
+            style={{ background: "#FF9500" }}>
             <span className="text-white font-bold text-[10px] tracking-wider">C3</span>
           </div>
           <span className="text-[15px] font-semibold tracking-tight text-white">Core 3</span>
@@ -58,7 +58,7 @@ export default function Navbar() {
           <button className="text-[13px] font-medium transition-colors duration-300 text-white/55 hover:text-white">Sign in</button>
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             className="px-5 py-1.5 rounded-full text-[13px] font-semibold text-white transition-shadow duration-300"
-            style={{ background: "linear-gradient(120deg,#3B82F6,#22D3EE,#8B5CF6)", boxShadow: "0 2px 12px rgba(59,130,246,0.35)" }}>
+            style={{ background: "#FF9500", boxShadow: "0 2px 12px rgba(255,149,0,0.40)" }}>
             Enroll now
           </motion.button>
         </div>
@@ -88,7 +88,7 @@ export default function Navbar() {
               ))}
               <div className="mt-3 pt-3 border-t border-white/[0.06]">
                 <button className="w-full text-white py-2.5 rounded-full text-[13px] font-semibold"
-                  style={{ background: "linear-gradient(120deg,#3B82F6,#22D3EE,#8B5CF6)" }}>
+                  style={{ background: "#FF9500" }}>
                   Enroll now
                 </button>
               </div>

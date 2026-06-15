@@ -65,7 +65,7 @@ export default function ReadinessSection() {
               <defs>
                 <linearGradient id="readinessGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor={currentPhase.color} />
-                  <stop offset="100%" stopColor={currentPhase.score >= 80 ? "#22D3EE" : currentPhase.color} />
+                  <stop offset="100%" stopColor={currentPhase.score >= 80 ? "#FFB347" : currentPhase.color} />
                 </linearGradient>
               </defs>
               <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />

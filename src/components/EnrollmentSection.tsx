@@ -4,11 +4,11 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
 const steps = [
-  { num: "01", title: "Plan Selection", desc: "Traditional, Roth, or both — AI suggests the optimal mix from your tax bracket.", gradient: "from-[#3B82F6] to-[#22D3EE]" },
-  { num: "02", title: "Contribution Rate", desc: "Set your % with live take-home pay preview. See employer match capture instantly.", gradient: "from-[#22D3EE] to-[#8B5CF6]" },
-  { num: "03", title: "Investment Strategy", desc: "Pick a target-date portfolio or build your own. Risk-adjusted by AI.", gradient: "from-[#8B5CF6] to-[#6D28D9]" },
-  { num: "04", title: "Auto-Increase", desc: "1% annual escalation. Tiny moves that compound into hundreds of thousands.", gradient: "from-[#6D28D9] to-[#3B82F6]" },
-  { num: "05", title: "Readiness Check", desc: "See your live score and projected balance. Tweak before you commit.", gradient: "from-[#3B82F6] to-[#10B981]" },
+  { num: "01", title: "Plan Selection", desc: "Traditional, Roth, or both — AI suggests the optimal mix from your tax bracket.", gradient: "from-[#FF9500] to-[#FFB347]" },
+  { num: "02", title: "Contribution Rate", desc: "Set your % with live take-home pay preview. See employer match capture instantly.", gradient: "from-[#FFB347] to-[#D67E00]" },
+  { num: "03", title: "Investment Strategy", desc: "Pick a target-date portfolio or build your own. Risk-adjusted by AI.", gradient: "from-[#D67E00] to-[#B36900]" },
+  { num: "04", title: "Auto-Increase", desc: "1% annual escalation. Tiny moves that compound into hundreds of thousands.", gradient: "from-[#B36900] to-[#FF9500]" },
+  { num: "05", title: "Readiness Check", desc: "See your live score and projected balance. Tweak before you commit.", gradient: "from-[#FF9500] to-[#10B981]" },
   { num: "06", title: "Review & Confirm", desc: "Everything on one screen. Confirm — and you're enrolled in under 5 minutes.", gradient: "from-[#10B981] to-[#34D399]" },
 ];
 
@@ -60,7 +60,7 @@ export default function EnrollmentSection() {
           transition={{ delay: 0.8 }} className="flex justify-center mt-12">
           <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
             className="magnetic-btn group relative px-9 py-3.5 rounded-full text-[14px] font-semibold text-white overflow-hidden"
-            style={{ background: "linear-gradient(120deg,#F59E0B,#F43F5E,#8B5CF6)", boxShadow: "0 6px 30px rgba(245,158,11,0.35)" }}>
+            style={{ background: "linear-gradient(120deg,#F59E0B,#F43F5E,#D67E00)", boxShadow: "0 6px 30px rgba(245,158,11,0.35)" }}>
             <span className="relative z-10 flex items-center gap-2">
               Enroll now — start your 5 minutes
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" /></svg>

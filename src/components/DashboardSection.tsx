@@ -5,29 +5,29 @@ import { motion, useInView } from "framer-motion";
 
 const stats = [
   { label: "Total Balance", value: "$142,893", sub: "+12.4% YTD", color: "#34D399" },
-  { label: "Projected at 65", value: "$1.2M", sub: "On pace", color: "#22D3EE" },
+  { label: "Projected at 65", value: "$1.2M", sub: "On pace", color: "#FFB347" },
   { label: "Readiness Score", value: "80/100", sub: "On Track", color: "#34D399" },
-  { label: "Contribution Rate", value: "8%", sub: "Auto-escalating", color: "#A78BFA" },
+  { label: "Contribution Rate", value: "8%", sub: "Auto-escalating", color: "#FFB347" },
 ];
 
 const allocations = [
-  { label: "US Equities", pct: 45, color: "#3B82F6" },
-  { label: "International", pct: 25, color: "#22D3EE" },
-  { label: "Bonds", pct: 20, color: "#8B5CF6" },
+  { label: "US Equities", pct: 45, color: "#FF9500" },
+  { label: "International", pct: 25, color: "#FFB347" },
+  { label: "Bonds", pct: 20, color: "#D67E00" },
   { label: "Cash", pct: 10, color: "#34D399" },
 ];
 
 const actions = [
-  { label: "Contribute", color: "#3B82F6" },
-  { label: "Invest", color: "#22D3EE" },
-  { label: "Transfer", color: "#8B5CF6" },
+  { label: "Contribute", color: "#FF9500" },
+  { label: "Invest", color: "#FFB347" },
+  { label: "Transfer", color: "#D67E00" },
   { label: "Loan", color: "#F59E0B" },
   { label: "Withdraw", color: "#F43F5E" },
 ];
 
 const activities = [
   { desc: "Contribution processed", amount: "+$480", date: "Today", color: "#34D399" },
-  { desc: "Investment return", amount: "+$1,204", date: "Yesterday", color: "#22D3EE" },
+  { desc: "Investment return", amount: "+$1,204", date: "Yesterday", color: "#FFB347" },
   { desc: "Fund rebalance", amount: "—", date: "3 days ago", color: "rgba(255,255,255,0.4)" },
 ];
 
@@ -39,15 +39,15 @@ export default function DashboardSection() {
     <section id="features" ref={ref} className="section-dark relative py-32 overflow-hidden">
       <div className="absolute inset-0 pattern-grid opacity-40 pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(37,99,235,0.12) 0%, transparent 60%)"
+        background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,149,0,0.12) 0%, transparent 60%)"
       }} />
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 28 }} animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }} className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5" style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)" }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5" style={{ background: "rgba(255,149,0,0.08)", border: "1px solid rgba(255,149,0,0.2)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#FF9500]" />
             <span className="text-[12px] font-semibold text-[#60A5FA] tracking-wider uppercase">Live Dashboard</span>
           </div>
           <h2 className="text-[clamp(1.9rem,4.2vw,3.2rem)] font-bold text-white tracking-[-0.035em] leading-[1.08] mb-5">
@@ -64,12 +64,12 @@ export default function DashboardSection() {
         <motion.div initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative rounded-3xl overflow-hidden shadow-float gradient-border"
-          style={{ background: "linear-gradient(180deg, #0A0E27 0%, #0F1531 100%)" }}>
+          style={{ background: "linear-gradient(180deg, #0A0F1A 0%, #141A28 100%)" }}>
 
           {/* Top bar */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]" style={{ background: "rgba(255,255,255,0.02)" }}>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-glow-blue" style={{ background: "linear-gradient(135deg,#3B82F6,#22D3EE,#8B5CF6)" }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-glow-blue" style={{ background: "linear-gradient(135deg,#FF9500,#FFB347,#D67E00)" }}>
                 <span className="text-white font-bold text-[9px]">C3</span>
               </div>
               <div>
@@ -108,20 +108,20 @@ export default function DashboardSection() {
                 <div className="flex gap-1">
                   {["1M","6M","1Y","All"].map((t, i) => (
                     <button key={`time-${t}`} className={`text-[10px] px-3 py-1 rounded-lg font-medium transition-all ${i===2 ? "text-white" : "text-white/40 hover:bg-white/5"}`}
-                      style={i===2 ? { background: "linear-gradient(90deg,#3B82F6,#8B5CF6)" } : {}}>{t}</button>
+                      style={i===2 ? { background: "linear-gradient(90deg,#FF9500,#D67E00)" } : {}}>{t}</button>
                   ))}
                 </div>
               </div>
               <svg viewBox="0 0 500 140" className="w-full" style={{ height: 130 }}>
                 <defs>
                   <linearGradient id="dashGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#FF9500" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#FF9500" stopOpacity="0" />
                   </linearGradient>
                   <linearGradient id="dashLine" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#3B82F6" />
-                    <stop offset="50%" stopColor="#22D3EE" />
-                    <stop offset="100%" stopColor="#8B5CF6" />
+                    <stop offset="0%" stopColor="#FF9500" />
+                    <stop offset="50%" stopColor="#FFB347" />
+                    <stop offset="100%" stopColor="#D67E00" />
                   </linearGradient>
                 </defs>
                 {[35,70,105].map((y, idx) => (
@@ -131,11 +131,11 @@ export default function DashboardSection() {
                   initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ duration: 1.5, delay: 0.6 }} />
                 <motion.path d="M0 120 C50 110 90 100 140 86 C190 72 220 80 270 62 C320 44 350 50 390 32 C420 18 460 15 500 6" fill="none" stroke="url(#dashLine)" strokeWidth="2.5" strokeLinecap="round"
                   initial={{ pathLength: 0 }} animate={inView ? { pathLength: 1 } : {}} transition={{ duration: 2, delay: 0.4, ease: [0.16,1,0.3,1] }}
-                  style={{ filter: "drop-shadow(0 0 6px rgba(59,130,246,0.5))" }} />
-                <circle cx="500" cy="6" r="4" fill="#22D3EE" style={{ filter: "drop-shadow(0 0 8px #22D3EE)" }} />
-                <circle cx="500" cy="6" r="10" fill="#22D3EE" fillOpacity="0.15" />
-                <rect x="398" y="-2" width="98" height="22" rx="6" fill="#0F1531" stroke="rgba(34,211,238,0.3)" strokeWidth="1" />
-                <text x="447" y="13" textAnchor="middle" fill="#22D3EE" fontSize="10" fontWeight="700">$142,893</text>
+                  style={{ filter: "drop-shadow(0 0 6px rgba(255,149,0,0.5))" }} />
+                <circle cx="500" cy="6" r="4" fill="#FFB347" style={{ filter: "drop-shadow(0 0 8px #FFB347)" }} />
+                <circle cx="500" cy="6" r="10" fill="#FFB347" fillOpacity="0.15" />
+                <rect x="398" y="-2" width="98" height="22" rx="6" fill="#141A28" stroke="rgba(255,179,71,0.3)" strokeWidth="1" />
+                <text x="447" y="13" textAnchor="middle" fill="#FFB347" fontSize="10" fontWeight="700">$142,893</text>
                 {["Jan","Mar","May","Jul","Sep","Nov"].map((m, i) => (
                   <text key={`month-${m}`} x={i * 100} y="135" fill="rgba(255,255,255,0.3)" fontSize="9" textAnchor="middle">{m}</text>
                 ))}
@@ -232,9 +232,9 @@ export default function DashboardSection() {
         {/* Feature highlights below */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           {[
-            { title: "AI Readiness Engine", desc: "Every change instantly recalculates your projected retirement balance and score.", gradient: "from-[#3B82F6] to-[#8B5CF6]" },
-            { title: "Smart Rebalancing", desc: "One-click portfolio rebalancing with real-time impact preview before you commit.", gradient: "from-[#22D3EE] to-[#34D399]" },
-            { title: "Guided Workflows", desc: "Loans, withdrawals, and rollovers — step-by-step, eligibility-checked, friction-free.", gradient: "from-[#8B5CF6] to-[#F43F5E]" },
+            { title: "AI Readiness Engine", desc: "Every change instantly recalculates your projected retirement balance and score.", gradient: "from-[#FF9500] to-[#D67E00]" },
+            { title: "Smart Rebalancing", desc: "One-click portfolio rebalancing with real-time impact preview before you commit.", gradient: "from-[#FFB347] to-[#34D399]" },
+            { title: "Guided Workflows", desc: "Loans, withdrawals, and rollovers — step-by-step, eligibility-checked, friction-free.", gradient: "from-[#D67E00] to-[#F43F5E]" },
           ].map((f, i) => (
             <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}

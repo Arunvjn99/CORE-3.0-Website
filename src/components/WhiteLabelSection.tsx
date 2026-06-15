@@ -4,16 +4,16 @@ import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 
 const brands = [
-  { name: "Ascend", primary: "#3B82F6", accent: "#60A5FA", bg: "rgba(59,130,246,0.08)" },
+  { name: "Ascend", primary: "#FF9500", accent: "#60A5FA", bg: "rgba(255,149,0,0.08)" },
   { name: "Vanguard", primary: "#F43F5E", accent: "#FB7185", bg: "rgba(244,63,94,0.08)" },
-  { name: "Lincoln", primary: "#22D3EE", accent: "#67E8F9", bg: "rgba(34,211,238,0.08)" },
-  { name: "Congruent", primary: "#8B5CF6", accent: "#A78BFA", bg: "rgba(139,92,246,0.08)" },
+  { name: "Lincoln", primary: "#FFB347", accent: "#67E8F9", bg: "rgba(255,179,71,0.08)" },
+  { name: "Congruent", primary: "#D67E00", accent: "#FFB347", bg: "rgba(214,126,0,0.08)" },
 ];
 
 const employerBenefits = [
   { label: "94%", desc: "enrollment completion rate", color: "#34D399" },
-  { label: "3.2×", desc: "higher contribution rates", color: "#22D3EE" },
-  { label: "$0", desc: "to participants — fully white-label", color: "#A78BFA" },
+  { label: "3.2×", desc: "higher contribution rates", color: "#FFB347" },
+  { label: "$0", desc: "to participants — fully white-label", color: "#FFB347" },
   { label: "11 days", desc: "from kickoff to live deployment", color: "#F59E0B" },
 ];
 
@@ -37,13 +37,13 @@ export default function WhiteLabelSection() {
           <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5"
-            style={{ background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.22)" }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#22D3EE]" style={{ boxShadow: "0 0 8px #22D3EE" }} />
+            style={{ background: "rgba(255,179,71,0.08)", border: "1px solid rgba(255,179,71,0.22)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#FFB347]" style={{ boxShadow: "0 0 8px #FFB347" }} />
             <span className="text-[12px] font-semibold text-[#67E8F9] tracking-wider uppercase">For Employers · HR · Plan Sponsors</span>
           </motion.div>
           <h2 className="text-[clamp(1.9rem,4.2vw,3.2rem)] font-bold text-white tracking-[-0.035em] leading-[1.08] mb-5">
             Your brand.{" "}
-            <span className="bg-gradient-to-r from-[#22D3EE] via-[#3B82F6] to-[#8B5CF6] bg-clip-text text-transparent">Our platform.</span>{" "}
+            <span className="bg-gradient-to-r from-[#FFB347] via-[#FF9500] to-[#D67E00] bg-clip-text text-transparent">Our platform.</span>{" "}
             Their future.
           </h2>
           <p className="text-[16px] text-white/55 leading-relaxed">
@@ -89,7 +89,7 @@ export default function WhiteLabelSection() {
         <motion.div initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.5, duration: 0.8 }} className="relative max-w-3xl mx-auto">
           <div className="absolute -inset-8 rounded-3xl blur-2xl opacity-50" style={{ background: `radial-gradient(ellipse, ${brand.primary}40, transparent 70%)`, transition: "background 0.8s" }} />
-          <div className="relative rounded-2xl border border-white/[0.08] overflow-hidden shadow-float" style={{ background: "linear-gradient(180deg,#0A0E27,#0F1531)" }}>
+          <div className="relative rounded-2xl border border-white/[0.08] overflow-hidden shadow-float" style={{ background: "linear-gradient(180deg,#0A0F1A,#141A28)" }}>
             <div className="px-4 py-3 flex items-center gap-2 border-b border-white/[0.05]">
               <div className="flex gap-1.5">
                 <div className="w-[10px] h-[10px] rounded-full bg-white/[0.08]" />
@@ -160,7 +160,7 @@ export default function WhiteLabelSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-12">
           <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
             className="magnetic-btn px-7 py-3 rounded-full text-[14px] font-semibold text-white"
-            style={{ background: "linear-gradient(120deg,#22D3EE,#3B82F6,#8B5CF6)", boxShadow: "0 6px 24px rgba(34,211,238,0.35)" }}>
+            style={{ background: "linear-gradient(120deg,#FFB347,#FF9500,#D67E00)", boxShadow: "0 6px 24px rgba(255,179,71,0.35)" }}>
             Book a 30-min demo with our team
           </motion.button>
           <button className="px-7 py-3 rounded-full text-[14px] font-medium text-white/70 border border-white/15 hover:bg-white/[0.04]">

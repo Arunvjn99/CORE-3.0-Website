@@ -14,21 +14,21 @@ const transactions = [
   {
     title: "Withdrawal",
     desc: "Hardship, in-service, or age-59½ distributions — guided by eligibility rules with fee transparency.",
-    gradient: "from-[#F43F5E] to-[#8B5CF6]",
+    gradient: "from-[#F43F5E] to-[#D67E00]",
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 19V5M5 12l7-7 7 7"/><path d="M5 19h14"/></svg>,
     stats: "7 types",
   },
   {
     title: "Fund Transfer",
     desc: "Move money between investment options with real-time impact analysis on portfolio allocation.",
-    gradient: "from-[#3B82F6] to-[#22D3EE]",
+    gradient: "from-[#FF9500] to-[#FFB347]",
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M7 16l-4-4 4-4"/><path d="M3 12h18"/><path d="M17 8l4 4-4 4"/></svg>,
     stats: "Instant",
   },
   {
     title: "Rollover",
     desc: "Consolidate outside accounts with document upload, validation, and allocation assignment.",
-    gradient: "from-[#10B981] to-[#22D3EE]",
+    gradient: "from-[#10B981] to-[#FFB347]",
     icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4v16h16"/><path d="M4 20l6-6 4 4 6-8"/></svg>,
     stats: "5-step",
   },
@@ -57,7 +57,7 @@ export default function TransactionsSection() {
           </motion.div>
           <h2 className="text-[clamp(1.9rem,4.2vw,3.2rem)] font-bold text-white tracking-[-0.035em] leading-[1.08] mb-5">
             Every financial move,{" "}
-            <span className="bg-gradient-to-r from-[#F59E0B] via-[#F43F5E] to-[#8B5CF6] bg-clip-text text-transparent">guided end-to-end.</span>
+            <span className="bg-gradient-to-r from-[#F59E0B] via-[#F43F5E] to-[#D67E00] bg-clip-text text-transparent">guided end-to-end.</span>
           </h2>
           <p className="text-[16px] text-white/55 leading-relaxed">
             Loans, withdrawals, rollovers, fund transfers — every transaction with real-time eligibility checks,
@@ -78,7 +78,7 @@ export default function TransactionsSection() {
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-5">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tx.gradient} p-[1px]`}>
-                    <div className="w-full h-full rounded-xl flex items-center justify-center text-white/70 group-hover:text-white transition-colors duration-300" style={{ background: "#0A0E27" }}>
+                    <div className="w-full h-full rounded-xl flex items-center justify-center text-white/70 group-hover:text-white transition-colors duration-300" style={{ background: "#0A0F1A" }}>
                       {tx.icon}
                     </div>
                   </div>

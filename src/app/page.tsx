@@ -1,36 +1,29 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import SmoothScroll from "@/components/SmoothScroll";
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import ThemeTransition from "@/components/ThemeTransition";
-
-const DashboardSection = dynamic(() => import("@/components/DashboardSection"), { ssr: false });
-const AISection = dynamic(() => import("@/components/AISection"), { ssr: false });
-const ReadinessSection = dynamic(() => import("@/components/ReadinessSection"), { ssr: false });
-const EnrollmentSection = dynamic(() => import("@/components/EnrollmentSection"), { ssr: false });
-const WhiteLabelSection = dynamic(() => import("@/components/WhiteLabelSection"), { ssr: false });
-const TransactionsSection = dynamic(() => import("@/components/TransactionsSection"), { ssr: false });
-const TrustSection = dynamic(() => import("@/components/TrustSection"), { ssr: false });
-const CTASection = dynamic(() => import("@/components/CTASection"), { ssr: false });
+import Navbar from "@/components/new/Navbar";
+import Hero from "@/components/new/Hero";
+import DarkFeatures from "@/components/new/DarkFeatures";
+import FeatureGrid from "@/components/new/FeatureGrid";
+import MobileSection from "@/components/new/MobileSection";
+import TrustSection from "@/components/new/TrustSection";
+import CTASection from "@/components/new/CTASection";
+import Footer from "@/components/new/Footer";
 
 export default function Home() {
   return (
     <>
       <SmoothScroll />
       <Navbar />
-      <ThemeTransition>
-        <HeroSection />
-        <DashboardSection />
-        <AISection />
-        <ReadinessSection />
-        <EnrollmentSection />
-        <WhiteLabelSection />
-        <TransactionsSection />
+      <main>
+        <Hero />
+        <DarkFeatures />
+        <FeatureGrid />
+        <MobileSection />
         <TrustSection />
         <CTASection />
-      </ThemeTransition>
+      </main>
+      <Footer />
     </>
   );
 }
