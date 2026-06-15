@@ -870,17 +870,19 @@ export default function DarkFeatures() {
             style={{
               flex: 1,
               display: "flex",
+              flexWrap: "nowrap",
               alignItems: "center",
               justifyContent: "center",
-              gap: 14,
-              padding: "40px 56px 40px 16px",
+              gap: 12,
+              padding: "28px 20px 28px 12px",
               overflow: "hidden",
+              minWidth: 0,
             }}
           >
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3 }}
-              style={{ flex: 1, minWidth: 0 }}
+              style={{ flex: "1 1 0", minWidth: 0 }}
             >
               <DashboardMockup />
             </motion.div>
@@ -889,8 +891,8 @@ export default function DarkFeatures() {
             <div
               style={{
                 flexShrink: 0,
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 borderRadius: "50%",
                 background: "white",
                 border: "1px solid rgba(0,0,0,0.10)",
@@ -909,7 +911,7 @@ export default function DarkFeatures() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3 }}
-              style={{ flex: 1, minWidth: 0 }}
+              style={{ flex: "1 1 0", minWidth: 0 }}
             >
               <ChatMockup />
             </motion.div>
@@ -963,7 +965,7 @@ export default function DarkFeatures() {
               flex: 1,
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "flex-end",
               padding: "40px 56px 40px 16px",
               overflow: "hidden",
             }}
@@ -971,7 +973,7 @@ export default function DarkFeatures() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3 }}
-              style={{ width: "100%" }}
+              style={{ width: "100%", maxWidth: 480 }}
             >
               <AIInsightCard />
             </motion.div>

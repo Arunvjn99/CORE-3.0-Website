@@ -241,18 +241,18 @@ export default function FeatureGrid() {
           {/* Card 1 — Your brand. Our platform. */}
           <BrandCard
             delay={0.1}
-            minH={657}
+            minH={520}
             gradient="radial-gradient(ellipse 80% 80% at 75% 100%, rgba(185,166,255,0.4) 0%, rgba(185,166,255,0) 64%)"
           >
             <div
               className="feature-card-row"
-              style={{ display: "flex", alignItems: "center", minHeight: 657 }}
+              style={{ display: "flex", alignItems: "center", minHeight: 520 }}
             >
               {/* Left: dashboard mockup */}
               <div
                 style={{
                   flex: "0 0 auto",
-                  padding: "32px 16px 32px 32px",
+                  padding: "20px 16px 20px 72px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -262,7 +262,7 @@ export default function FeatureGrid() {
               </div>
 
               {/* Right: text */}
-              <div style={{ flex: 1, padding: "40px 72px 40px 24px" }}>
+              <div style={{ flex: "0 0 auto", marginLeft: "auto", marginRight: "180px", padding: "24px 72px 24px 24px" }}>
                 <h3
                   style={{
                     fontSize: "clamp(2.2rem, 3.2vw, 3.6rem)",

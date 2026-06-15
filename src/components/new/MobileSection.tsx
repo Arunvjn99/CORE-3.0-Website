@@ -99,7 +99,7 @@ export default function MobileSection() {
           <h2
             style={{
               fontSize: "clamp(2rem, 4vw, 3.5rem)",
-              fontWeight: 800,
+              fontWeight: 600,
               letterSpacing: "-0.04em",
               lineHeight: 1.07,
               color: "#0F172A",
@@ -110,15 +110,15 @@ export default function MobileSection() {
             <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #2563EB, #7C3AED)",
+                background: "linear-gradient(135deg, #3B82F6, #38BDF8)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
             >
-              CORE 3.0 is now
-              <br />
-              in your pocket.
-            </span>
+              CORE 3.0
+            </span>{" "}is now in
+            <br />
+            your pocket.
           </h2>
 
           <p
@@ -130,8 +130,7 @@ export default function MobileSection() {
               marginBottom: 36,
             }}
           >
-            The all-new CORE 3.0 mobile app brings your retirement journey to you
-            — anytime, anywhere.
+            also has the following features:
           </p>
 
           {/* Feature rows */}
