@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -452,23 +452,33 @@ function ChatMockup() {
 
 /* ── Language Globe Illustration ─────────────────────────────────────────── */
 function LanguageGlobeIllustration({ lang }: { lang: "en" | "es" }) {
-  const G = "rgba(109,40,217,0.18)";
+  const G  = "rgba(109,40,217,0.18)";
+  const GA = "rgba(109,40,217,0.28)"; // slightly brighter for moving meridians
 
   return (
     <div style={{ position: "relative", width: "100%", aspectRatio: "1", maxWidth: 480 }}>
-      {/* Wireframe globe */}
+      {/* Wireframe globe — latitude rings are fixed, longitude meridians spin */}
       <svg
         viewBox="0 0 480 480"
         fill="none"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
-        <circle cx="240" cy="240" r="196"  stroke={G} strokeWidth="1.2" />
-        <ellipse cx="240" cy="240" rx="90"  ry="196" stroke={G} strokeWidth="1" />
-        <ellipse cx="240" cy="240" rx="166" ry="196" stroke={G} strokeWidth="0.8" />
-        <ellipse cx="240" cy="240" rx="196" ry="78"  stroke={G} strokeWidth="1" />
-        <ellipse cx="240" cy="240" rx="196" ry="136" stroke={G} strokeWidth="0.8" />
+        {/* ── Fixed layer: outer circle + latitude parallels + equator ── */}
+        <circle cx="240" cy="240" r="196"  stroke={G}  strokeWidth="1.2" />
+        <ellipse cx="240" cy="240" rx="196" ry="78"  stroke={G}  strokeWidth="1"   />
+        <ellipse cx="240" cy="240" rx="196" ry="136" stroke={G}  strokeWidth="0.8" />
         <line x1="44"  y1="240" x2="436" y2="240" stroke={G} strokeWidth="0.8" />
-        <line x1="240" y1="44"  x2="240" y2="436" stroke={G} strokeWidth="0.8" />
+
+        {/* ── Rotating layer: longitude meridians spin continuously ── */}
+        <motion.g
+          style={{ transformOrigin: "240px 240px" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 34, ease: "linear", repeat: Infinity }}
+        >
+          <ellipse cx="240" cy="240" rx="90"  ry="196" stroke={GA} strokeWidth="1"   />
+          <ellipse cx="240" cy="240" rx="166" ry="196" stroke={GA} strokeWidth="0.8" />
+          <line x1="240" y1="44" x2="240" y2="436" stroke={GA} strokeWidth="0.8" />
+        </motion.g>
       </svg>
 
       {/* English bubble — upper left */}
@@ -781,417 +791,13 @@ function RetirementProjectionChart() {
   );
 }
 
-/* ─── Card config ──────────────────────────────────────────────────────────── */
-const CARD_DATA = [
-  {
-    id: "language",
-    label: "LANGUAGE",
-    bg: "#EFEBFF",
-    heading: "Speak your language.\nPlan with confidence.",
-    desc: "Core 3.0 is available in both English and Spanish, so every participant can understand, navigate, and take action in the language they prefer.",
-    accentColor: "#7C3AED",
-  },
-  {
-    id: "interact",
-    label: "INTERFACE",
-    bg: "linear-gradient(135deg, #ECE8FF 0%, #FDE0D4 100%)",
-    heading: "Choose how\nyou interact.",
-    desc: "Use the traditional experience with intuitive menus and dashboards, or chat with CORE Intelligence for instant answers and personalised assistance.",
-    accentColor: "#EA580C",
-  },
-  {
-    id: "ai-guides",
-    label: "AI GUIDANCE",
-    bg: "linear-gradient(135deg, #EDE8FF 0%, #FFE4DC 100%)",
-    heading: "AI that guides,\nnot just answers.",
-    desc: "Get personalized insights and proactive recommendations based on your goals, savings progress, and life events.",
-    accentColor: "#7C3AED",
-  },
-  {
-    id: "tomorrow",
-    label: "PROJECTION",
-    bg: "linear-gradient(135deg, #EEF2FF 0%, #E4E8FF 100%)",
-    heading: "See tomorrow,\ntoday.",
-    desc: "Live projections update in real time as you adjust contributions, retirement age, or goals.",
-    accentColor: "#4F46E5",
-  },
-];
-
-// Per-card widget travel offsets (x/y px from right-panel centre)
-// Creates real movement so the shared widget visibly travels between slots
-const WIDGET_OFFSETS = [
-  { x: 24, y: -28 },
-  { x: -14, y: 10 },
-  { x: 26, y: 22 },
-  { x: 0, y: 14 },
-];
-
-/* ─── Shared-widget feature scroll section ────────────────────────────────── */
-function FeatureScrollSection() {
-  const [lang, setLang] = useState<"en" | "es">("en");
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const widgetWrapRef = useRef<HTMLDivElement>(null);
-  const bgLayerRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeCard, setActiveCard] = useState(0);
-  const prevCardRef = useRef(-1);
-  const activeCardRef = useRef(0);
-
-  // Track scroll progress through the 500 vh wrapper and map to card index
-  useGSAP(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-    ScrollTrigger.create({
-      trigger: wrapper,
-      start: "top top",
-      end: "bottom bottom",
-      onUpdate: (self) => {
-        const idx = Math.min(3, Math.floor(self.progress * 4));
-        if (idx !== activeCardRef.current) {
-          prevCardRef.current = activeCardRef.current;
-          activeCardRef.current = idx;
-          setActiveCard(idx);
-        }
-      },
-    });
-  }, { scope: wrapperRef });
-
-  // Animate the shared widget + cross-fade backgrounds on card change
-  useEffect(() => {
-    const widget = widgetWrapRef.current;
-    if (!widget) return;
-
-    const prev = prevCardRef.current >= 0 ? WIDGET_OFFSETS[prevCardRef.current] : WIDGET_OFFSETS[activeCard];
-    const next = WIDGET_OFFSETS[activeCard];
-
-    gsap.killTweensOf(widget);
-    gsap.set(widget, { x: prev.x, y: prev.y, scale: 1, filter: "none" });
-
-    // Phase 1: lift + glow + blur
-    gsap.timeline()
-      .to(widget, {
-        scale: 1.06,
-        filter: "drop-shadow(0 16px 56px rgba(124,58,237,0.55)) blur(2.5px)",
-        duration: 0.2,
-        ease: "power2.in",
-      })
-      // Phase 2: travel to new position
-      .to(widget, {
-        x: next.x,
-        y: next.y,
-        scale: 1.03,
-        filter: "drop-shadow(0 24px 64px rgba(124,58,237,0.30)) blur(1px)",
-        duration: 0.44,
-        ease: "power3.inOut",
-      })
-      // Phase 3: land + settle
-      .to(widget, {
-        scale: 1.0,
-        filter: "none",
-        duration: 0.3,
-        ease: "back.out(1.7)",
-      });
-
-    // Cross-fade backgrounds
-    bgLayerRefs.current.forEach((bg, i) => {
-      if (!bg) return;
-      gsap.to(bg, { opacity: i === activeCard ? 1 : 0, duration: 0.72, ease: "power2.inOut" });
-    });
-  }, [activeCard]);
-
-  const card = CARD_DATA[activeCard];
-
-  return (
-    // 500 vh wrapper — provides 400 vh of scroll (100 vh per card transition)
-    <div ref={wrapperRef} style={{ height: "500vh", position: "relative", padding: "16px 24px" }}>
-
-      {/* ── Sticky panel ── */}
-      <div
-        style={{
-          position: "sticky",
-          top: 16,
-          height: "calc(100vh - 32px)",
-          borderRadius: 28,
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "stretch",
-        }}
-      >
-        {/* Background layers — one per card, GSAP cross-fades opacity */}
-        {CARD_DATA.map((c, i) => (
-          <div
-            key={c.id}
-            ref={(el) => { bgLayerRefs.current[i] = el; }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: c.bg,
-              opacity: i === 0 ? 1 : 0,
-              zIndex: 0,
-            }}
-          />
-        ))}
-
-        {/* Left side progress bar */}
-        <div
-          style={{
-            position: "absolute",
-            left: 28,
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-            zIndex: 10,
-          }}
-        >
-          {CARD_DATA.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: 3,
-                height: i === activeCard ? 36 : 14,
-                borderRadius: 2,
-                background: i === activeCard ? PURPLE : "rgba(0,0,0,0.15)",
-                transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* ── LEFT: animated text panel ── */}
-        <div
-          style={{
-            flex: "0 0 46%",
-            padding: "80px 48px 80px 72px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            position: "relative",
-            zIndex: 5,
-          }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`label-${activeCard}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                color: card.accentColor,
-                marginBottom: 16,
-                opacity: 0.75,
-              }}
-            >
-              {card.label} &nbsp; {String(activeCard + 1).padStart(2, "0")} / 04
-            </motion.div>
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            <motion.h3
-              key={`h3-${activeCard}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -22 }}
-              transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                fontSize: "clamp(2rem, 3.2vw, 3.2rem)",
-                fontWeight: 600,
-                letterSpacing: "-0.04em",
-                lineHeight: 1.08,
-                color: "#1a1a2e",
-                marginBottom: 20,
-                whiteSpace: "pre-line",
-              }}
-            >
-              {card.heading}
-            </motion.h3>
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={`desc-${activeCard}`}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.42, delay: 0.07, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                fontSize: 16,
-                color: "#1F1F24",
-                lineHeight: 1.7,
-                maxWidth: 380,
-                opacity: 0.65,
-                marginBottom: activeCard === 0 ? 32 : 0,
-              }}
-            >
-              {card.desc}
-            </motion.p>
-          </AnimatePresence>
-
-          {/* Card 1 only: language toggle buttons */}
-          {activeCard === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.38, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-              style={{ display: "flex", gap: 10 }}
-            >
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setLang("en")}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "12px 24px", borderRadius: 99,
-                  background: lang === "en" ? PURPLE : "white",
-                  color: lang === "en" ? "white" : PURPLE,
-                  border: `2px solid ${lang === "en" ? PURPLE : "rgba(124,58,237,0.30)"}`,
-                  fontSize: 15, fontWeight: 600, cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: lang === "en" ? "0 4px 16px rgba(124,58,237,0.28)" : "none",
-                }}
-              >
-                English <span>🇺🇸</span>
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setLang("es")}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "12px 24px", borderRadius: 99,
-                  background: lang === "es" ? PURPLE : "white",
-                  color: lang === "es" ? "white" : PURPLE,
-                  border: `2px solid ${lang === "es" ? PURPLE : "rgba(124,58,237,0.30)"}`,
-                  fontSize: 15, fontWeight: 600, cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: lang === "es" ? "0 4px 16px rgba(124,58,237,0.28)" : "none",
-                }}
-              >
-                Español <span>🇲🇽</span>
-              </motion.button>
-            </motion.div>
-          )}
-        </div>
-
-        {/* ── RIGHT: Shared morphing widget ── */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            zIndex: 5,
-            overflow: "hidden",
-            padding: "40px 56px 40px 16px",
-          }}
-        >
-          {/* widgetWrapRef is the element GSAP animates (x/y/scale/filter) */}
-          <div ref={widgetWrapRef} style={{ width: "100%", maxWidth: 460 }}>
-            <AnimatePresence mode="wait">
-              {activeCard === 0 && (
-                <motion.div
-                  key="w-lang"
-                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -12, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <LanguageGlobeIllustration lang={lang} />
-                </motion.div>
-              )}
-
-              {activeCard === 1 && (
-                <motion.div
-                  key="w-dash"
-                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -12, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ display: "flex", gap: 12, alignItems: "center" }}
-                >
-                  <div style={{ flex: "1 1 0", minWidth: 0 }}><DashboardMockup /></div>
-                  <div style={{
-                    flexShrink: 0, width: 32, height: 32, borderRadius: "50%",
-                    background: "white", border: "1px solid rgba(0,0,0,0.10)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 600, color: "#9CA3AF",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-                  }}>or</div>
-                  <div style={{ flex: "1 1 0", minWidth: 0 }}><ChatMockup /></div>
-                </motion.div>
-              )}
-
-              {activeCard === 2 && (
-                <motion.div
-                  key="w-ai"
-                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -12, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <AIInsightCard />
-                </motion.div>
-              )}
-
-              {activeCard === 3 && (
-                <motion.div
-                  key="w-proj"
-                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -12, transition: { duration: 0.2 } }}
-                  transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <RetirementProjectionChart />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Bottom pill progress dots */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 28,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 8,
-            zIndex: 10,
-          }}
-        >
-          {CARD_DATA.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: i === activeCard ? 28 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: i === activeCard ? PURPLE : "rgba(0,0,0,0.18)",
-                transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Main export ─────────────────────────────────────────────────────────── */
 export default function DarkFeatures() {
   const headerRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(headerRef, { once: true, margin: "-60px" });
-  // Kept to satisfy hidden-div JSX references (those cards are display:none)
   const [lang, setLang] = useState<"en" | "es">("en");
 
   return (
-    <>
-      {/* ── CORE AI dark spotlight header ── */}
-      <section style={{ background: DARK, overflow: "hidden" }} id="core-ai">
+    <section style={{ background: DARK, overflow: "hidden" }} id="core-ai">
       {/* ── CORE AI spotlight ── */}
       <div
         style={{
@@ -1278,8 +884,17 @@ export default function DarkFeatures() {
         </motion.p>
       </div>
 
-      {/* (old per-card JSX removed — handled by FeatureScrollSection) */}
-      <div style={{ display: "none" }}>
+      {/* ── Feature cards ── */}
+      <div
+        style={{
+          maxWidth: 1376,
+          margin: "0 auto",
+          padding: "0 24px 96px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
         {/* ── Card 1: Speak your language ── */}
         <FeatureCard delay={0} bg="#EFEBFF" minH={620}>
           {/* Left: text + lang toggle */}
@@ -1605,10 +1220,6 @@ export default function DarkFeatures() {
           </div>
         </FeatureCard>
       </div>
-      </section>
-
-      {/* ── Shared-widget pinned scroll experience ── */}
-      <FeatureScrollSection />
-    </>
+    </section>
   );
 }
