@@ -95,8 +95,7 @@ export default function TrustSection() {
           </div>
 
           <p ref={subtitleRef} style={{ fontSize: "clamp(0.95rem, 1.3vw, 1.1rem)", color: "#64748B", lineHeight: 1.75, maxWidth: 520, margin: "0 auto", opacity: 0 }}>
-            $2.4 trillion in retirement assets are watching. We&apos;ve engineered every
-            layer to keep them safe.
+            Protecting participant data and retirement journeys at every step
           </p>
         </div>
 
@@ -139,12 +138,6 @@ export default function TrustSection() {
             </div>
           ))}
         </div>
-
-        <p
-          style={{ textAlign: "center", marginTop: 40, fontSize: 12, color: "#94A3B8" }}
-        >
-          Independently audited · Department of Labor ERISA standards · AES-256 encryption at rest and in transit
-        </p>
       </div>
 
       <style jsx>{`

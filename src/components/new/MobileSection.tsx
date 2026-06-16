@@ -117,7 +117,7 @@ export default function MobileSection() {
     if (!inView) return;
     const interval = setInterval(() => {
       setActiveIdx((i) => (i + 1) % FEATURES.length);
-    }, 300);
+    }, 1200);
     return () => clearInterval(interval);
   }, [inView]);
 
@@ -141,7 +141,7 @@ export default function MobileSection() {
         <motion.div
           initial={{ opacity: 0, x: -32 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* New Launch badge */}
           <div
@@ -215,7 +215,7 @@ export default function MobileSection() {
                 key={f.title}
                 initial={{ opacity: 0, x: -20 }}
                 animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.45, delay: 0.2 + i * 0.08 }}
+                transition={{ duration: 0.5, delay: 0.2 + i * 0.09 }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -226,7 +226,7 @@ export default function MobileSection() {
                   border: i === activeIdx ? `1px solid ${f.color}30` : "1px solid transparent",
                   boxShadow: i === activeIdx ? `0 4px 24px ${f.color}40, 0 1px 6px ${f.color}20` : "none",
                   cursor: "default",
-                  transition: "background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease",
+                  transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
                 }}
               >
                 {/* Icon */}
@@ -241,7 +241,7 @@ export default function MobileSection() {
                     justifyContent: "center",
                     flexShrink: 0,
                     transform: i === activeIdx ? "scale(1.08)" : "scale(1)",
-                    transition: "transform 0.6s ease",
+                    transition: "transform 0.25s ease",
                   }}
                 >
                   <svg
@@ -276,7 +276,7 @@ export default function MobileSection() {
                     alignItems: "center",
                     justifyContent: "center",
                     flexShrink: 0,
-                    transition: "all 0.6s ease",
+                    transition: "all 0.25s ease",
                   }}
                 >
                   <svg
@@ -300,7 +300,7 @@ export default function MobileSection() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}
         >
           {/* Radial glow */}
@@ -339,7 +339,7 @@ export default function MobileSection() {
               initial={{ opacity: 0, y: 16, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -12, scale: 0.94 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute",
                 top: "8%",

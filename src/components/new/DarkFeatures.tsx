@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -52,11 +51,74 @@ function AIInsightCard() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    gsap.set(el, { opacity: 0, y: 28, scale: 0.96 });
+
+    const st = { trigger: el, start: "top 90%", once: true };
+
     const tl = gsap.timeline({
-      scrollTrigger: { trigger: containerRef.current, start: "top 88%", once: true },
+      scrollTrigger: st,
+      onComplete: () => {
+        const rows = gsap.utils.toArray<HTMLElement>(".ai-row", el);
+        const cycle = gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
+        rows.forEach((row, i) => {
+          cycle
+            .to(row, {
+              x: 4,
+              duration: 0.35,
+              ease: "power2.out",
+            }, i * 1.6)
+            .to(row, {
+              x: 0,
+              duration: 0.35,
+              ease: "power2.in",
+            }, i * 1.6 + 1.1);
+        });
+      },
     });
-    tl.from(".ai-header", { opacity: 0, y: -10, duration: 0.35, ease: "power2.out" })
-      .from(".ai-row", { opacity: 0, x: 28, duration: 0.45, stagger: 0.13, ease: "power3.out" }, "-=0.1");
+
+    // Card shell rises in
+    tl.fromTo(
+      el,
+      { opacity: 0, y: 28, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.65, ease: "power3.out" }
+    )
+    // Header slides down
+    .from(".ai-header", { opacity: 0, y: -12, duration: 0.4, ease: "power2.out" }, "-=0.35")
+    // Star sparkle
+    .from(".ai-star", { scale: 0, rotate: -90, duration: 0.5, ease: "back.out(2.5)" }, "-=0.25")
+  // Rows stagger in from right
+    .from(".ai-row", { opacity: 0, x: 32, duration: 0.5, stagger: 0.14, ease: "power3.out" }, "-=0.2")
+    // Icon circles pop
+    .from(".ai-icon", { scale: 0, opacity: 0, duration: 0.4, stagger: 0.14, ease: "back.out(2)" }, "-=0.55")
+    // Chevrons fade in
+    .from(".ai-chevron", { opacity: 0, x: -6, duration: 0.3, stagger: 0.1, ease: "power2.out" }, "-=0.4")
+    // $320 emphasis pop
+    .from(".ai-amount", { scale: 0.6, opacity: 0, duration: 0.45, ease: "back.out(3)" }, "-=0.3");
+
+    // Idle float on card
+    gsap.to(el, {
+      y: -6,
+      duration: 2.8,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 1.2,
+      scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" },
+    });
+
+    // Star gentle pulse
+    gsap.to(".ai-star", {
+      scale: 1.2,
+      duration: 1.8,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 1.5,
+      scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" },
+    });
   }, { scope: containerRef });
 
   return (
@@ -80,7 +142,7 @@ function AIInsightCard() {
           borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="#7C3AED">
+        <svg className="ai-star" width="11" height="11" viewBox="0 0 24 24" fill="#7C3AED">
           <path d="M12 2l2.09 6.26H21l-5.47 3.97 2.09 6.26L12 14.52l-5.62 3.97 2.09-6.26L3 8.26h6.91z" />
         </svg>
         <span style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>AI Insight</span>
@@ -88,7 +150,7 @@ function AIInsightCard() {
 
       {/* Row 1 — orange / dollar */}
       <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#FFF7ED", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="ai-icon" style={{ width: 36, height: 36, borderRadius: "50%", background: "#FFF7ED", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
           </svg>
@@ -99,17 +161,17 @@ function AIInsightCard() {
           </div>
           <div style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.5 }}>
             By $50/month, you could increase your monthly retirement income by{" "}
-            <strong style={{ color: "#EA580C", fontWeight: 700 }}>$320.</strong>
+            <strong className="ai-amount" style={{ color: "#EA580C", fontWeight: 700 }}>$320.</strong>
           </div>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+        <svg className="ai-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
           <path d={chevron} />
         </svg>
       </div>
 
       {/* Row 2 — teal / shield-check */}
       <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ECFDF5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="ai-icon" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ECFDF5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
@@ -122,14 +184,14 @@ function AIInsightCard() {
             Review your employer match to maximize your retirement savings.
           </div>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+        <svg className="ai-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
           <path d={chevron} />
         </svg>
       </div>
 
       {/* Row 3 — purple / clock */}
       <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0" }}>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F3FF", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="ai-icon" style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F3FF", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -142,7 +204,7 @@ function AIInsightCard() {
             Retiring at 62 may require a higher monthly savings rate.
           </div>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+        <svg className="ai-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
           <path d={chevron} />
         </svg>
       </div>
@@ -456,30 +518,57 @@ function LanguageGlobeIllustration({ lang }: { lang: "en" | "es" }) {
   const GA = "rgba(109,40,217,0.28)"; // slightly brighter for moving meridians
 
   return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "1", maxWidth: 480 }}>
-      {/* Wireframe globe — latitude rings are fixed, longitude meridians spin */}
-      <svg
-        viewBox="0 0 480 480"
-        fill="none"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "1",
+        maxWidth: 480,
+      }}
+    >
+      {/* Wireframe globe — latitude rings fixed, meridians sway left/right (Y-axis) */}
+      <motion.div
+        animate={{ x: [-14, 14, -14] }}
+        transition={{ duration: 9, ease: "easeInOut", repeat: Infinity }}
+        style={{ position: "absolute", inset: 0 }}
       >
-        {/* ── Fixed layer: outer circle + latitude parallels + equator ── */}
-        <circle cx="240" cy="240" r="196"  stroke={G}  strokeWidth="1.2" />
-        <ellipse cx="240" cy="240" rx="196" ry="78"  stroke={G}  strokeWidth="1"   />
-        <ellipse cx="240" cy="240" rx="196" ry="136" stroke={G}  strokeWidth="0.8" />
-        <line x1="44"  y1="240" x2="436" y2="240" stroke={G} strokeWidth="0.8" />
-
-        {/* ── Rotating layer: longitude meridians spin continuously ── */}
-        <motion.g
-          style={{ transformOrigin: "240px 240px" }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 34, ease: "linear", repeat: Infinity }}
+        <svg
+          viewBox="0 0 480 480"
+          fill="none"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
         >
-          <ellipse cx="240" cy="240" rx="90"  ry="196" stroke={GA} strokeWidth="1"   />
-          <ellipse cx="240" cy="240" rx="166" ry="196" stroke={GA} strokeWidth="0.8" />
-          <line x1="240" y1="44" x2="240" y2="436" stroke={GA} strokeWidth="0.8" />
-        </motion.g>
-      </svg>
+          {/* Fixed: outer circle + latitude parallels + equator */}
+          <circle cx="240" cy="240" r="196" stroke={G} strokeWidth="1.2" />
+          <ellipse cx="240" cy="240" rx="196" ry="78" stroke={G} strokeWidth="1" />
+          <ellipse cx="240" cy="240" rx="196" ry="136" stroke={G} strokeWidth="0.8" />
+          <line x1="44" y1="240" x2="436" y2="240" stroke={G} strokeWidth="0.8" />
+
+          {/* Meridians — rx pulses simulate left/right turn (never upside down) */}
+          <motion.ellipse
+            cx="240" cy="240" ry="196"
+            fill="none"
+            stroke={GA}
+            strokeWidth="1"
+            animate={{ rx: [88, 168, 88, 38, 88] }}
+            transition={{ duration: 12, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.ellipse
+            cx="240" cy="240" ry="196"
+            fill="none"
+            stroke={GA}
+            strokeWidth="0.8"
+            animate={{ rx: [162, 48, 162, 188, 162] }}
+            transition={{ duration: 12, ease: "easeInOut", repeat: Infinity }}
+          />
+          <motion.line
+            x1="240" y1="44" x2="240" y2="436"
+            stroke={GA}
+            strokeWidth="0.8"
+            animate={{ opacity: [0.9, 0.35, 0.9, 0.2, 0.9] }}
+            transition={{ duration: 12, ease: "easeInOut", repeat: Infinity }}
+          />
+        </svg>
+      </motion.div>
 
       {/* English bubble — upper left */}
       <motion.div
@@ -793,95 +882,216 @@ function RetirementProjectionChart() {
 
 export default function DarkFeatures() {
   const headerRef = useRef<HTMLDivElement>(null);
+  const pillHeroRef = useRef<HTMLDivElement>(null);
+  const pillGlowRef = useRef<HTMLDivElement>(null);
+  const textFlowRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(headerRef, { once: true, margin: "-60px" });
   const [lang, setLang] = useState<"en" | "es">("en");
 
+  useGSAP(() => {
+    const pill = pillHeroRef.current;
+    const glow = pillGlowRef.current;
+    const text = textFlowRef.current;
+    if (!pill || !glow || !text) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: headerRef.current,
+        start: "top 88%",
+        once: true,
+      },
+    });
+
+    // Pill flows down into place from above
+    tl.fromTo(
+      pill,
+      { y: -56, opacity: 0, scale: 1.12, filter: "blur(12px)" },
+      { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.25, ease: "power3.out" }
+    ).fromTo(
+      glow,
+      { opacity: 0, scale: 0.5, y: -48 },
+      { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: "power2.out" },
+      "-=0.9"
+    )
+    // Text flows upward toward the pill
+    .fromTo(
+      text,
+      { y: 48, opacity: 0, filter: "blur(6px)" },
+      { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.0, ease: "power3.out" },
+      "-=0.65"
+    );
+
+    // Subtle breathe on pill after landing
+    gsap.to(pill, {
+      y: 4,
+      duration: 3.4,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay: 1.25,
+    });
+  }, { scope: headerRef });
+
   return (
     <section style={{ background: DARK, overflow: "hidden" }} id="core-ai">
-      {/* ── CORE AI spotlight ── */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          paddingTop: 72,
-          paddingBottom: 0,
-          position: "relative",
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-          style={{ position: "relative", width: 340, height: 260 }}
-        >
-          <Image
-            src="/assets/hero-core-ai.png"
-            alt="CORE AI"
-            width={688}
-            height={496}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              borderRadius: 20,
-              display: "block",
-            }}
-          />
-        </motion.div>
-      </div>
-
-      {/* ── Section heading ── */}
+      {/* ── CORE AI hero — Figma 2545:67 ── */}
       <div
         ref={headerRef}
         style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           textAlign: "center",
-          padding: "48px 24px 72px",
+          padding: "0 24px 40px",
           position: "relative",
           zIndex: 1,
+          width: "100%",
         }}
       >
-        <motion.h2
-          initial={{ opacity: 0, y: 22 }}
-          animate={headerInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.75, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        {/* Pill + sparkles spotlight */}
+        <div
+          ref={pillHeroRef}
           style={{
-            fontSize: "clamp(2rem, 4vw, 3.4rem)",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.1,
-            color: "white",
-            marginBottom: 20,
+            position: "relative",
+            width: "100%",
+            maxWidth: 528,
+            height: 320,
+            marginBottom: 8,
+            opacity: 0,
           }}
         >
-          Go deeper with
-          <br />
-          <span
+          {/* Animated bg layers */}
+          <div
+            ref={pillGlowRef}
+            aria-hidden
             style={{
-              background:
-                "linear-gradient(115deg, #3B82F6 0%, #22D3EE 50%, #A855F7 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              position: "absolute",
+              inset: 0,
+              overflow: "hidden",
+              opacity: 0,
             }}
           >
-            CORE Intelligence
-          </span>
-        </motion.h2>
+            <img
+              src="/assets/core-ai-bg-layer1.png"
+              alt=""
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "110%",
+                top: 0,
+                left: 0,
+                objectFit: "cover",
+                pointerEvents: "none",
+              }}
+            />
+            <img
+              src="/assets/core-ai-bg-layer2.png"
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={headerInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.65, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            fontSize: 18,
-            color: "rgba(255,255,255,0.5)",
-            lineHeight: 1.7,
-            maxWidth: 560,
-            margin: "0 auto",
-          }}
-        >
-          Get personalized guidance and actionable advice on retirement from
-          your own 24/7 coach.
-        </motion.p>
+          {/* Sparkle + CORE AI pill */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              zIndex: 1,
+            }}
+          >
+            <img
+              src="/assets/core-ai-sparkle.png"
+              alt=""
+              width={160}
+              height={160}
+              style={{ width: 160, height: 160, objectFit: "cover", display: "block" }}
+            />
+            <div
+              style={{
+                position: "relative",
+                marginTop: -12,
+                padding: "8px 24px",
+                borderRadius: 128,
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                background: "rgba(255,255,255,0.10)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,1), inset 0 0 4px rgba(255,255,255,0.25)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 16,
+                  fontWeight: 500,
+                  color: "white",
+                  letterSpacing: "-0.32px",
+                  lineHeight: 1.4,
+                }}
+              >
+                CORE AI
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Heading — flows up toward pill */}
+        <div ref={textFlowRef} style={{ opacity: 0, maxWidth: 946, width: "100%" }}>
+          <motion.h2
+            initial={false}
+            animate={headerInView ? { opacity: 1 } : {}}
+            style={{
+              fontSize: "clamp(2rem, 5vw, 4rem)",
+              fontWeight: 600,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.02,
+              color: "rgba(255,255,255,0.6)",
+              marginBottom: 16,
+            }}
+          >
+            Go deeper with
+            <br />
+            <span
+              style={{
+                fontWeight: 700,
+                background:
+                  "linear-gradient(115deg, #3B82F6 0%, #22D3EE 50%, #A855F7 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              CORE Intelligence
+            </span>
+          </motion.h2>
+
+          <motion.p
+            initial={false}
+            animate={headerInView ? { opacity: 1 } : {}}
+            style={{
+              fontSize: "clamp(1rem, 2vw, 1.5rem)",
+              color: "rgba(255,255,255,0.6)",
+              lineHeight: 1.3,
+              maxWidth: 946,
+              margin: "0 auto",
+              letterSpacing: "0.003em",
+            }}
+          >
+            Get personalized guidance and actionable advice on retirement from
+            your own 24/7 coach.
+          </motion.p>
+        </div>
       </div>
 
       {/* ── Feature cards ── */}
@@ -1151,7 +1361,7 @@ export default function DarkFeatures() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3 }}
-              style={{ width: "100%", maxWidth: 480 }}
+              style={{ width: "100%", maxWidth: 480, marginRight: 56 }}
             >
               <AIInsightCard />
             </motion.div>
@@ -1213,7 +1423,7 @@ export default function DarkFeatures() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ duration: 0.3 }}
-              style={{ width: "100%", maxWidth: 480 }}
+              style={{ width: "100%", maxWidth: 480, marginLeft: 48 }}
             >
               <RetirementProjectionChart />
             </motion.div>

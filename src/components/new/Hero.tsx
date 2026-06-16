@@ -8,14 +8,11 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LIVE_APP = "https://corethreepointo.netlify.app/login";
-
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const headLine1Ref = useRef<HTMLDivElement>(null);
   const headLine2Ref = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
   const imageWrapRef = useRef<HTMLDivElement>(null);
   const imageInnerRef = useRef<HTMLDivElement>(null);
 
@@ -42,19 +39,12 @@ export default function Hero() {
       { opacity: 1, y: 0, duration: 0.8 },
       "-=0.6"
     )
-    // CTA
-    .fromTo(
-      ctaRef.current,
-      { opacity: 0, y: 16 },
-      { opacity: 1, y: 0, duration: 0.7 },
-      "-=0.55"
-    )
     // Image panel rise
     .fromTo(
       imageWrapRef.current,
       { opacity: 0, y: 72 },
       { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" },
-      "-=0.4"
+      "-=0.35"
     );
 
     // Parallax: image scrolls up at 0.3× speed (Bevel-style)
@@ -107,15 +97,15 @@ export default function Hero() {
           zIndex: 1,
           maxWidth: 1200,
           margin: "0 auto",
-          padding: "0 24px",
+          padding: "48px 24px 0",
           textAlign: "center",
         }}
       >
         {/* Headline — two masked lines (Bevel shutter reveal) */}
         <h1
           style={{
-            fontSize: "clamp(2.4rem, 5.2vw, 4.8rem)",
-            fontWeight: 800,
+            fontSize: "clamp(1.9rem, 4vw, 3.4rem)",
+            fontWeight: 600,
             letterSpacing: "-0.04em",
             lineHeight: 1.05,
             color: "#111827",
@@ -132,7 +122,7 @@ export default function Hero() {
           {/* Line 2 */}
           <span style={{ display: "block", overflow: "hidden", paddingBottom: "0.08em" }}>
             <div ref={headLine2Ref} style={{ display: "block" }}>
-              Through{" "}
+              With{" "}
               <span
                 style={{
                   background: "linear-gradient(130deg, #509BF1 0%, #071DC7 35%, #6B67F8 65%, #3F5FFF 100%)",
@@ -140,7 +130,7 @@ export default function Hero() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Conversational AI
+                Smarter Retirement Planning
               </span>
             </div>
           </span>
@@ -150,54 +140,17 @@ export default function Hero() {
         <p
           ref={subtitleRef}
           style={{
-            fontSize: "clamp(1rem, 1.6vw, 1.5rem)",
+            fontSize: "clamp(0.875rem, 1.15vw, 1.125rem)",
             color: "rgba(31,32,37,0.6)",
             lineHeight: 1.3,
             maxWidth: 856,
-            margin: "0 auto 36px",
+            margin: "0 auto 64px",
             opacity: 0,
           }}
         >
           A modern 401(k) experience powered by AI that makes retirement
           planning feel as clear and natural as checking your phone.
         </p>
-
-        {/* CTA */}
-        <div ref={ctaRef} style={{ marginBottom: 64, opacity: 0 }}>
-          <a
-            href={LIVE_APP}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hero-cta"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "13px 30px",
-              borderRadius: 99,
-              background: "#111827",
-              color: "#F9FAFB",
-              fontSize: 15,
-              fontWeight: 600,
-              textDecoration: "none",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.20)",
-              transition: "opacity 0.2s, transform 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "0.85";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "1";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            Visit Portal
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        </div>
 
         {/* ── Hero banner image with parallax ── */}
         <div ref={imageWrapRef} style={{ display: "flex", justifyContent: "center", position: "relative", opacity: 0 }}>
@@ -207,7 +160,7 @@ export default function Hero() {
             ref={imageInnerRef}
             style={{
               width: "100%",
-              maxWidth: 1024,
+              maxWidth: 760,
               borderRadius: 20,
               overflow: "hidden",
               boxShadow: "0 2px 0 rgba(0,0,0,0.06), 0 24px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.07)",

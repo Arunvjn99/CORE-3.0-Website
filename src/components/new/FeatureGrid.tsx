@@ -11,6 +11,10 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const CARD_BG = "#EBF0F8";
 
+/* Readiness card height — width matches sibling cards (full container) */
+const READINESS_H = 520;
+const READINESS_PHONE_SCALE = (READINESS_H / 657) * 1.22;
+
 /* ── Brand Dashboard Mockup ──────────────────────────────────────────────── */
 const METRICS_DATA = [
   { label: "Retirement Balance",  pct: 0.78, color: "#22C55E", value: "On Track",   pill: true,  pillBg: "#DCFCE7", pillColor: "#16A34A" },
@@ -184,12 +188,12 @@ function BrandDashboardMockup() {
               <stop offset="100%" stopColor="rgba(139,92,246,0.01)" />
             </linearGradient>
           </defs>
-          {/* area fill — starts bottom-left, sweeps steeply to top-right */}
-          <path ref={areaFillRef} d="M8,118 C90,116 190,82 340,12 L340,122 L8,122 Z" fill="url(#brandProjGrad)" />
-          {/* current plan — moderate growth */}
-          <path ref={line1Ref} d="M8,118 C90,116 190,98 340,58" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
-          {/* proposed plan — steeper growth */}
-          <path ref={line2Ref} d="M8,118 C90,116 190,82 340,12" fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinecap="round" />
+          {/* area fill — extended to right edge */}
+          <path ref={areaFillRef} d="M8,118 C90,115 210,68 408,4 L408,122 L8,122 Z" fill="url(#brandProjGrad)" />
+          {/* current plan */}
+          <path ref={line1Ref} d="M8,118 C90,115 210,88 408,44" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
+          {/* proposed plan */}
+          <path ref={line2Ref} d="M8,118 C90,115 210,68 408,4" fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinecap="round" />
           {([{ x: 8, l: "Today" }, { x: 120, l: "Age 50" }, { x: 230, l: "Age 60" }, { x: 340, l: "Retirement" }] as const).map(({ x, l }) => (
             <text key={l} x={x} y={129} textAnchor="middle" fontSize="7" fill="#9CA3AF" fontFamily="system-ui, sans-serif">{l}</text>
           ))}
@@ -225,16 +229,53 @@ function BrandDashboardMockup() {
   );
 }
 
+/* ── Readiness card decorative circle (Figma 2479:1314) ─────────────────── */
+function ReadinessCircleOverlay() {
+  return (
+    <div
+      aria-hidden
+      className="readiness-circle-overlay"
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        left: "-50.1%",
+        top: "-55.7%",
+        width: "101.1%",
+        aspectRatio: "1",
+        borderRadius: "50%",
+        overflow: "hidden",
+        zIndex: 0,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0)",
+          boxShadow: "inset 0 0 24px rgba(255,255,255,1)",
+        }}
+      />
+    </div>
+  );
+}
+
 function BrandCard({
   children,
   gradient,
   delay = 0,
   minH = 520,
+  height,
+  maxWidth,
+  className,
 }: {
   children: React.ReactNode;
   gradient: string;
   delay?: number;
   minH?: number;
+  height?: number;
+  maxWidth?: number;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
@@ -242,6 +283,7 @@ function BrandCard({
   return (
     <motion.div
       ref={ref}
+      className={className}
       initial={{ opacity: 0, y: 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.75, delay, ease: [0.16, 1, 0.3, 1] }}
@@ -249,7 +291,11 @@ function BrandCard({
         borderRadius: 24,
         overflow: "hidden",
         background: `${gradient}, linear-gradient(90deg, ${CARD_BG} 0%, ${CARD_BG} 100%)`,
-        minHeight: minH,
+        width: maxWidth ? "100%" : undefined,
+        maxWidth: maxWidth ?? undefined,
+        margin: maxWidth ? "0 auto" : undefined,
+        minHeight: height ?? minH,
+        height: height ?? undefined,
         position: "relative",
       }}
     >
@@ -328,7 +374,7 @@ export default function FeatureGrid() {
               </div>
 
               {/* Right: text */}
-              <div style={{ flex: "0 0 auto", marginLeft: "auto", marginRight: "180px", padding: "24px 72px 24px 24px" }}>
+              <div style={{ flex: "0 0 auto", marginLeft: "auto", marginRight: "120px", padding: "24px 72px 24px 24px" }}>
                 <h3
                   style={{
                     fontSize: "clamp(2.2rem, 3.2vw, 3.6rem)",
@@ -360,39 +406,52 @@ export default function FeatureGrid() {
           </BrandCard>
 
           {/* Card 2 — Watch your future change in real time. */}
-          <div id="readiness">
+          <div id="readiness" style={{ width: "100%" }}>
           <BrandCard
             delay={0.18}
-            gradient="radial-gradient(ellipse 80% 80% at 25% 100%, rgba(131,227,222,0.4) 0%, rgba(131,227,222,0) 64%)"
+            height={READINESS_H}
+            className="readiness-brand-card"
+            gradient="linear-gradient(180deg, rgba(131,227,222,0) 0%, rgba(131,227,222,0.2) 90%, rgba(131,227,222,0.4) 100%)"
           >
+            <ReadinessCircleOverlay />
             <div
-              className="feature-card-row"
+              className="feature-card-row readiness-card-row"
               style={{
                 display: "flex",
                 alignItems: "center",
-                minHeight: 520,
+                width: "100%",
+                height: READINESS_H,
+                position: "relative",
+                zIndex: 1,
               }}
             >
-              <div style={{ flex: 1, padding: "40px 48px 40px 80px" }}>
+              <div
+                style={{
+                  flex: "0 0 39.5%",
+                  padding: "0 3.5% 0 6.5%",
+                  alignSelf: "center",
+                  marginLeft: 36,
+                }}
+              >
                 <h3
                   style={{
-                    fontSize: "clamp(2rem, 3.5vw, 4rem)",
+                    fontSize: "clamp(1.85rem, 3.2vw, 3.5rem)",
                     fontWeight: 590,
                     letterSpacing: "-0.03em",
                     lineHeight: 1,
                     color: "#222326",
                     marginBottom: 16,
-                    maxWidth: 394,
+                    maxWidth: 420,
                   }}
                 >
                   Watch your future change in real time.
                 </h3>
                 <p
                   style={{
-                    fontSize: "clamp(1rem, 1.2vw, 1.5rem)",
+                    fontSize: "clamp(1rem, 1.3vw, 1.45rem)",
                     color: "rgba(31,32,37,0.6)",
                     lineHeight: 1.3,
-                    maxWidth: 453,
+                    maxWidth: 470,
                   }}
                 >
                   Every decision instantly updates your projected outcome.
@@ -400,11 +459,13 @@ export default function FeatureGrid() {
               </div>
               <div
                 style={{
-                  flex: "0 0 48%",
+                  flex: "0 0 47.8%",
+                  height: READINESS_H,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  padding: "24px 48px 24px 24px",
+                  marginLeft: "auto",
+                  padding: "0 1.7% 0 0",
                   position: "relative",
                 }}
               >
@@ -424,9 +485,10 @@ export default function FeatureGrid() {
                   width={518}
                   height={540}
                   style={{
-                    width: "100%",
+                    width: "auto",
                     height: "auto",
-                    maxWidth: 518,
+                    maxHeight: Math.round(540 * READINESS_PHONE_SCALE),
+                    maxWidth: Math.round(518 * READINESS_PHONE_SCALE),
                     display: "block",
                     position: "relative",
                     filter: "drop-shadow(0 24px 48px rgba(0,0,0,0.18))",
@@ -441,8 +503,22 @@ export default function FeatureGrid() {
 
       <style jsx>{`
         @media (max-width: 900px) {
-          .feature-card-row {
+          :global(.readiness-brand-card) {
+            height: auto !important;
+            min-height: 420px !important;
+          }
+          .readiness-card-row {
             flex-direction: column !important;
+            height: auto !important;
+            min-height: 420px !important;
+          }
+          .feature-card-row:not(.readiness-card-row) {
+            flex-direction: column !important;
+          }
+          .readiness-circle-overlay {
+            left: -25% !important;
+            top: 20% !important;
+            width: 150% !important;
           }
         }
       `}</style>
