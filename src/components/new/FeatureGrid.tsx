@@ -98,14 +98,14 @@ function BrandDashboardMockup() {
     borderRadius: 14,
   } as const;
 
-  /* scale: 578→462, 463→370 (≈ ×0.80) */
+  /* scale: 578→462, 530→424 (≈ ×0.80) */
   const SCALE = 0.80;
   const W = Math.round(578 * SCALE); // 462
-  const H = Math.round(463 * SCALE); // 370
+  const H = Math.round(530 * SCALE); // 424
 
   return (
     <div ref={containerRef} style={{ width: W, height: H, overflow: "hidden", flexShrink: 0 }}>
-    <div style={{ width: 578, height: 463, display: "flex", flexDirection: "column", gap: 8, overflow: "hidden", transform: `scale(${SCALE})`, transformOrigin: "top left" }}>
+    <div style={{ width: 578, height: 530, display: "flex", flexDirection: "column", gap: 8, overflow: "hidden", transform: `scale(${SCALE})`, transformOrigin: "top left" }}>
 
       {/* ── Row 1: Metrics + Readiness ── */}
       <div className="dash-panel" style={{ display: "flex", gap: 8 }}>
@@ -177,18 +177,21 @@ function BrandDashboardMockup() {
         </div>
         <div ref={projValRef} style={{ fontSize: 22, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", marginBottom: 6 }}>$0</div>
 
-        <svg viewBox="0 0 420 80" width="100%" style={{ flex: 1, minHeight: 0 }}>
+        <svg viewBox="0 0 420 130" width="100%" preserveAspectRatio="none" style={{ flex: 1, minHeight: 0 }}>
           <defs>
             <linearGradient id="brandProjGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(139,92,246,0.20)" />
+              <stop offset="0%" stopColor="rgba(139,92,246,0.22)" />
               <stop offset="100%" stopColor="rgba(139,92,246,0.01)" />
             </linearGradient>
           </defs>
-          <path ref={areaFillRef} d="M8,72 C90,70 190,52 340,10 L340,74 L8,74 Z" fill="url(#brandProjGrad)" />
-          <path ref={line1Ref} d="M8,72 C90,70 190,60 340,36" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
-          <path ref={line2Ref} d="M8,72 C90,70 190,52 340,10" fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinecap="round" />
+          {/* area fill — starts bottom-left, sweeps steeply to top-right */}
+          <path ref={areaFillRef} d="M8,118 C90,116 190,82 340,12 L340,122 L8,122 Z" fill="url(#brandProjGrad)" />
+          {/* current plan — moderate growth */}
+          <path ref={line1Ref} d="M8,118 C90,116 190,98 340,58" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
+          {/* proposed plan — steeper growth */}
+          <path ref={line2Ref} d="M8,118 C90,116 190,82 340,12" fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinecap="round" />
           {([{ x: 8, l: "Today" }, { x: 120, l: "Age 50" }, { x: 230, l: "Age 60" }, { x: 340, l: "Retirement" }] as const).map(({ x, l }) => (
-            <text key={l} x={x} y={79} textAnchor="middle" fontSize="7" fill="#9CA3AF" fontFamily="system-ui, sans-serif">{l}</text>
+            <text key={l} x={x} y={129} textAnchor="middle" fontSize="7" fill="#9CA3AF" fontFamily="system-ui, sans-serif">{l}</text>
           ))}
         </svg>
 
