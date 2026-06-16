@@ -30,13 +30,61 @@ const ACTION_ITEMS = [
 ];
 
 function BrandDashboardMockup() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const line1Ref      = useRef<SVGPathElement>(null);
+  const line2Ref      = useRef<SVGPathElement>(null);
+  const areaFillRef   = useRef<SVGPathElement>(null);
+  const projValRef    = useRef<HTMLDivElement>(null);
+  const gaugeArcRef   = useRef<SVGCircleElement>(null);
 
   useGSAP(() => {
     const st = { trigger: containerRef.current, start: "top 85%", once: true };
-    gsap.from(".dash-panel", { opacity: 0, y: 22, duration: 0.5, stagger: 0.15, ease: "power2.out", scrollTrigger: st });
-    gsap.from(".metric-row", { opacity: 0, x: -12, duration: 0.35, stagger: 0.07, ease: "power2.out", delay: 0.25, scrollTrigger: st });
-    gsap.from(".action-item", { opacity: 0, y: 8, scale: 0.88, duration: 0.32, stagger: 0.06, ease: "back.out(1.6)", delay: 0.5, scrollTrigger: st });
+
+    // Panel + row entrance
+    gsap.from(".dash-panel",   { opacity: 0, y: 22, duration: 0.5, stagger: 0.15, ease: "power2.out", scrollTrigger: st });
+    gsap.from(".metric-row",   { opacity: 0, x: -12, duration: 0.35, stagger: 0.07, ease: "power2.out", delay: 0.25, scrollTrigger: st });
+    gsap.from(".action-item",  { opacity: 0, y: 8, scale: 0.88, duration: 0.32, stagger: 0.06, ease: "back.out(1.6)", delay: 0.5, scrollTrigger: st });
+
+    // Metric progress bars grow from 0
+    gsap.from(".metric-bar-fill", { scaleX: 0, transformOrigin: "left", duration: 0.6, stagger: 0.08, ease: "power2.out", delay: 0.4, scrollTrigger: st });
+
+    // Projection chart lines draw left→right
+    [line1Ref, line2Ref].forEach((ref, i) => {
+      if (!ref.current) return;
+      const len = ref.current.getTotalLength();
+      gsap.fromTo(ref.current,
+        { strokeDasharray: len, strokeDashoffset: len, opacity: 0 },
+        { strokeDashoffset: 0, opacity: 1, duration: 1.2, delay: 0.5 + i * 0.2, ease: "power2.inOut", scrollTrigger: st }
+      );
+    });
+
+    // Area fill fades in after lines draw
+    if (areaFillRef.current) {
+      gsap.from(areaFillRef.current, { opacity: 0, duration: 0.5, delay: 1.5, scrollTrigger: st });
+    }
+
+    // Count up $62,400
+    if (projValRef.current) {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 62400, duration: 1.4, delay: 0.6, ease: "power2.out",
+        scrollTrigger: st,
+        onUpdate: () => {
+          if (projValRef.current)
+            projValRef.current.textContent = `$${Math.round(obj.val).toLocaleString()}`;
+        },
+      });
+    }
+
+    // Gauge arc draw
+    if (gaugeArcRef.current) {
+      const el = gaugeArcRef.current;
+      const fullDash = parseFloat(el.getAttribute("stroke-dasharray") || "0");
+      gsap.fromTo(el,
+        { strokeDashoffset: fullDash },
+        { strokeDashoffset: fullDash - fullDash * 0.80, duration: 1.2, delay: 0.4, ease: "power2.inOut", scrollTrigger: st }
+      );
+    }
   }, { scope: containerRef });
 
   // Gauge math — 270° arc, r=38, viewBox 104×104
@@ -72,7 +120,7 @@ function BrandDashboardMockup() {
               <div style={{ width: 7, height: 7, borderRadius: "50%", background: m.color, flexShrink: 0 }} />
               <span style={{ fontSize: 9.5, color: "#6B7280", flex: 1, minWidth: 0 }}>{m.label}</span>
               <div style={{ width: 64, height: 3.5, borderRadius: 2, background: "#F3F4F6", overflow: "hidden", flexShrink: 0 }}>
-                <div style={{ width: `${m.pct * 100}%`, height: "100%", background: m.color, borderRadius: 2 }} />
+                <div className="metric-bar-fill" style={{ width: `${m.pct * 100}%`, height: "100%", background: m.color, borderRadius: 2 }} />
               </div>
               {m.pill ? (
                 <div style={{ background: m.pillBg, color: m.pillColor, fontSize: 8.5, fontWeight: 700, padding: "2px 6px", borderRadius: 99, flexShrink: 0 }}>
@@ -95,8 +143,9 @@ function BrandDashboardMockup() {
               strokeDasharray={`${arcLen.toFixed(1)} ${(C - arcLen).toFixed(1)}`}
               transform={`rotate(135 ${cx} ${cy})`}
             />
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1f2025" strokeWidth="7" strokeLinecap="round"
+            <circle ref={gaugeArcRef} cx={cx} cy={cy} r={r} fill="none" stroke="#1f2025" strokeWidth="7" strokeLinecap="round"
               strokeDasharray={`${progressLen.toFixed(1)} ${(C - progressLen).toFixed(1)}`}
+              strokeDashoffset={progressLen.toFixed(1)}
               transform={`rotate(135 ${cx} ${cy})`}
             />
             <text x={cx} y={cy - 3} textAnchor="middle" dominantBaseline="middle" fontSize="19" fontWeight="700" fill="#111827">80</text>
@@ -126,7 +175,7 @@ function BrandDashboardMockup() {
             <span style={{ fontSize: 8.5, fontWeight: 600, color: "#16A34A" }}>+ 18% vs. current plan</span>
           </div>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", marginBottom: 6 }}>$62,400</div>
+        <div ref={projValRef} style={{ fontSize: 22, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", marginBottom: 6 }}>$0</div>
 
         <svg viewBox="0 0 420 80" width="100%" style={{ flex: 1, minHeight: 0 }}>
           <defs>
@@ -135,9 +184,9 @@ function BrandDashboardMockup() {
               <stop offset="100%" stopColor="rgba(139,92,246,0.01)" />
             </linearGradient>
           </defs>
-          <path d="M8,72 C90,70 190,52 340,10 L340,74 L8,74 Z" fill="url(#brandProjGrad)" />
-          <path d="M8,72 C90,70 190,60 340,36" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M8,72 C90,70 190,52 340,10"  fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeDasharray="5,4" strokeLinecap="round" />
+          <path ref={areaFillRef} d="M8,72 C90,70 190,52 340,10 L340,74 L8,74 Z" fill="url(#brandProjGrad)" />
+          <path ref={line1Ref} d="M8,72 C90,70 190,60 340,36" fill="none" stroke="rgba(139,92,246,0.45)" strokeWidth="1.8" strokeLinecap="round" />
+          <path ref={line2Ref} d="M8,72 C90,70 190,52 340,10" fill="none" stroke="#7C3AED" strokeWidth="1.8" strokeLinecap="round" />
           {([{ x: 8, l: "Today" }, { x: 120, l: "Age 50" }, { x: 230, l: "Age 60" }, { x: 340, l: "Retirement" }] as const).map(({ x, l }) => (
             <text key={l} x={x} y={79} textAnchor="middle" fontSize="7" fill="#9CA3AF" fontFamily="system-ui, sans-serif">{l}</text>
           ))}
