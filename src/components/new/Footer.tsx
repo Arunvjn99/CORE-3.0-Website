@@ -106,20 +106,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom row: copyright */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            paddingTop: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
-            © 2026 Core 3 · All Rights Reserved
-          </span>
-        </div>
       </div>
     </footer>
   );

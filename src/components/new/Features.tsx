@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 
 const features = [
@@ -45,10 +45,12 @@ function FeatureCard({
   f,
   delay,
   inView,
+  isActive,
 }: {
   f: (typeof features)[0];
   delay: number;
   inView: boolean;
+  isActive: boolean;
 }) {
   return (
     <motion.div
@@ -58,33 +60,40 @@ function FeatureCard({
       whileHover={{ y: -6, scale: 1.015 }}
       className="group relative p-6 rounded-2xl cursor-default overflow-hidden"
       style={{
-        background: "#0D1528",
-        border: `1px solid ${f.color}25`,
-        transition: "box-shadow 0.3s ease, border-color 0.3s ease",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow =
-          `0 0 30px ${f.glow}, 0 8px 32px rgba(0,0,0,0.4)`;
-        (e.currentTarget as HTMLElement).style.borderColor = `${f.color}55`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-        (e.currentTarget as HTMLElement).style.borderColor = `${f.color}25`;
+        background: isActive ? `${f.color}0D` : "#0D1528",
+        border: `1px solid ${isActive ? `${f.color}55` : `${f.color}25`}`,
+        boxShadow: isActive
+          ? `0 0 32px ${f.glow}, 0 8px 32px rgba(0,0,0,0.4)`
+          : "none",
+        transition: "box-shadow 0.5s ease, border-color 0.5s ease, background 0.5s ease",
       }}
     >
-      {/* Inner gradient wash on hover */}
+      {/* Inner gradient wash — active or hover */}
       <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-400 rounded-2xl"
+        className="absolute inset-0 pointer-events-none rounded-2xl"
         style={{
           background: `radial-gradient(ellipse 80% 60% at 20% 20%, ${f.color}09, transparent 65%)`,
+          opacity: isActive ? 1 : 0,
+          transition: "opacity 0.5s ease",
         }}
       />
+
+      {/* Active progress bar at bottom */}
+      {isActive && (
+        <motion.div
+          className="absolute bottom-0 left-0 h-[2px] rounded-full"
+          style={{ background: f.color }}
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 2.4, ease: "linear" }}
+        />
+      )}
 
       {/* Icon */}
       <motion.div
         className="relative w-10 h-10 rounded-xl mb-4 flex items-center justify-center"
         style={{ background: `${f.color}18` }}
-        whileHover={{ scale: 1.15, rotate: 5 }}
+        animate={isActive ? { scale: 1.12 } : { scale: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 15 }}
       >
         <svg
@@ -101,7 +110,10 @@ function FeatureCard({
         </svg>
       </motion.div>
 
-      <h3 className="relative text-[15px] font-semibold text-white mb-2">
+      <h3
+        className="relative text-[15px] font-semibold mb-2"
+        style={{ color: isActive ? "white" : "rgba(255,255,255,0.85)", transition: "color 0.4s" }}
+      >
         {f.title}
       </h3>
       <p className="relative text-[13px] text-white/45 leading-relaxed">{f.desc}</p>
@@ -112,6 +124,16 @@ function FeatureCard({
 export default function Features() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  // Cycle through cards every 2.5s once section is in view
+  useEffect(() => {
+    if (!inView) return;
+    const interval = setInterval(() => {
+      setActiveIdx((i) => (i + 1) % features.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [inView]);
 
   return (
     <section
@@ -146,14 +168,14 @@ export default function Features() {
         {/* Grid: 3 top */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {features.slice(0, 3).map((f, i) => (
-            <FeatureCard key={f.title} f={f} delay={0.1 + i * 0.09} inView={inView} />
+            <FeatureCard key={f.title} f={f} delay={0.1 + i * 0.09} inView={inView} isActive={activeIdx === i} />
           ))}
         </div>
 
         {/* 2 bottom centered */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:max-w-2xl md:mx-auto">
           {features.slice(3).map((f, i) => (
-            <FeatureCard key={f.title} f={f} delay={0.37 + i * 0.09} inView={inView} />
+            <FeatureCard key={f.title} f={f} delay={0.37 + i * 0.09} inView={inView} isActive={activeIdx === i + 3} />
           ))}
         </div>
       </div>

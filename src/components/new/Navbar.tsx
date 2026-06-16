@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CoreLogo from "./CoreLogo";
 
@@ -14,16 +14,33 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const lastY = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 32);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 32);
+      // Bevel-style: hide on scroll-down past 80px, reveal on scroll-up
+      if (y > 80) {
+        setHidden(y > lastY.current + 4);
+      } else {
+        setHidden(false);
+      }
+      lastY.current = y;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 flex justify-center" style={{ paddingTop: 16, paddingLeft: 24, paddingRight: 24 }}>
+    <motion.nav
+      className="fixed top-0 inset-x-0 z-50 flex justify-center"
+      style={{ paddingTop: 16, paddingLeft: 24, paddingRight: 24 }}
+      animate={{ y: hidden ? -120 : 0, opacity: hidden ? 0 : 1 }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+    >
       <div
         style={{
           display: "flex",
@@ -50,16 +67,42 @@ export default function Navbar() {
           <CoreLogo height={24} variant="dark" />
         </button>
 
+        {/* Desktop nav links with Bevel underline hover */}
         <div className="hidden md:flex items-center" style={{ gap: 32 }}>
           {NAV_LINKS.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              style={{ fontSize: 14, fontWeight: 500, color: "#79797c", textDecoration: "none", transition: "color 0.2s" }}
+              className="nav-link"
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: "#79797c",
+                textDecoration: "none",
+                position: "relative",
+                paddingBottom: 2,
+                transition: "color 0.25s",
+              }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#1f2025")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#79797c")}
             >
               {link.label}
+              {/* Bevel underline: scaleX 0→1 from right on hover */}
+              <span
+                className="nav-underline"
+                style={{
+                  position: "absolute",
+                  bottom: -1,
+                  left: 0,
+                  right: 0,
+                  height: 1.5,
+                  background: "#1f2025",
+                  transform: "scaleX(0)",
+                  transformOrigin: "right",
+                  transition: "transform 0.55s cubic-bezier(0.19,1,0.22,1)",
+                  borderRadius: 2,
+                }}
+              />
             </a>
           ))}
         </div>
@@ -77,16 +120,23 @@ export default function Navbar() {
             fontSize: 16,
             fontWeight: 510,
             textDecoration: "none",
-            transition: "opacity 0.2s",
+            transition: "opacity 0.2s, transform 0.2s",
             flexShrink: 0,
             letterSpacing: "-0.32px",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "0.85";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
         >
           Visit Portal
         </a>
 
+        {/* Mobile hamburger */}
         <button
           className="md:hidden flex flex-col items-center justify-center gap-[5px]"
           style={{ width: 36, height: 36, background: "none", border: "none", cursor: "pointer" }}
@@ -103,14 +153,15 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: "absolute",
               top: "calc(100% + 8px)",
@@ -128,15 +179,18 @@ export default function Navbar() {
               gap: 12,
             }}
           >
-            {NAV_LINKS.map((link) => (
-              <a
+            {NAV_LINKS.map((link, i) => (
+              <motion.a
                 key={link.label}
                 href={link.href}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.3 }}
                 onClick={() => setMobileOpen(false)}
                 style={{ fontSize: 16, fontWeight: 500, color: "#1f1f24", textDecoration: "none", padding: "8px 0" }}
               >
                 {link.label}
-              </a>
+              </motion.a>
             ))}
             <a
               href={LIVE_APP}
@@ -160,6 +214,13 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+
+      <style jsx global>{`
+        .nav-link:hover .nav-underline {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      `}</style>
+    </motion.nav>
   );
 }

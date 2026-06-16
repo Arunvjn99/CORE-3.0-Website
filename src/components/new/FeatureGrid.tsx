@@ -3,6 +3,11 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const CARD_BG = "#EBF0F8";
 
@@ -25,6 +30,15 @@ const ACTION_ITEMS = [
 ];
 
 function BrandDashboardMockup() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const st = { trigger: containerRef.current, start: "top 85%", once: true };
+    gsap.from(".dash-panel", { opacity: 0, y: 22, duration: 0.5, stagger: 0.15, ease: "power2.out", scrollTrigger: st });
+    gsap.from(".metric-row", { opacity: 0, x: -12, duration: 0.35, stagger: 0.07, ease: "power2.out", delay: 0.25, scrollTrigger: st });
+    gsap.from(".action-item", { opacity: 0, y: 8, scale: 0.88, duration: 0.32, stagger: 0.06, ease: "back.out(1.6)", delay: 0.5, scrollTrigger: st });
+  }, { scope: containerRef });
+
   // Gauge math — 270° arc, r=38, viewBox 104×104
   const cx = 52, cy = 52, r = 38;
   const C = 2 * Math.PI * r;
@@ -42,11 +56,11 @@ function BrandDashboardMockup() {
   const H = Math.round(463 * SCALE); // 370
 
   return (
-    <div style={{ width: W, height: H, overflow: "hidden", flexShrink: 0 }}>
+    <div ref={containerRef} style={{ width: W, height: H, overflow: "hidden", flexShrink: 0 }}>
     <div style={{ width: 578, height: 463, display: "flex", flexDirection: "column", gap: 8, overflow: "hidden", transform: `scale(${SCALE})`, transformOrigin: "top left" }}>
 
       {/* ── Row 1: Metrics + Readiness ── */}
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="dash-panel" style={{ display: "flex", gap: 8 }}>
 
         {/* Metrics panel */}
         <div style={{ ...card, flex: "0 0 57%", padding: "14px 16px" }}>
@@ -54,7 +68,7 @@ function BrandDashboardMockup() {
             Account Overview
           </div>
           {METRICS_DATA.map((m) => (
-            <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
+            <div key={m.label} className="metric-row" style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
               <div style={{ width: 7, height: 7, borderRadius: "50%", background: m.color, flexShrink: 0 }} />
               <span style={{ fontSize: 9.5, color: "#6B7280", flex: 1, minWidth: 0 }}>{m.label}</span>
               <div style={{ width: 64, height: 3.5, borderRadius: 2, background: "#F3F4F6", overflow: "hidden", flexShrink: 0 }}>
@@ -99,7 +113,7 @@ function BrandDashboardMockup() {
       </div>
 
       {/* ── Row 2: Live Projection chart ── */}
-      <div style={{ ...card, padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div className="dash-panel" style={{ ...card, padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 2 }}>
           <div>
             <div style={{ fontSize: 10.5, fontWeight: 600, color: "#111827" }}>Live Projection</div>
@@ -142,9 +156,9 @@ function BrandDashboardMockup() {
       </div>
 
       {/* ── Row 3: Action bar ── */}
-      <div style={{ ...card, padding: "12px 16px", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+      <div className="dash-panel" style={{ ...card, padding: "12px 16px", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
         {ACTION_ITEMS.map((item) => (
-          <div key={item.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+          <div key={item.label} className="action-item" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: `${item.color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={item.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d={item.d} />

@@ -3,6 +3,11 @@
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const DARK = "#1f2025";
 const PURPLE = "#7c3aed";
@@ -44,9 +49,19 @@ function FeatureCard({
 /* ── AI Insight Card ──────────────────────────────────────────────────────── */
 function AIInsightCard() {
   const chevron = "M9 18l6-6-6-6";
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: containerRef.current, start: "top 88%", once: true },
+    });
+    tl.from(".ai-header", { opacity: 0, y: -10, duration: 0.35, ease: "power2.out" })
+      .from(".ai-row", { opacity: 0, x: 28, duration: 0.45, stagger: 0.13, ease: "power3.out" }, "-=0.1");
+  }, { scope: containerRef });
 
   return (
     <div
+      ref={containerRef}
       style={{
         background: "white",
         borderRadius: 20,
@@ -58,6 +73,7 @@ function AIInsightCard() {
     >
       {/* Header */}
       <div
+        className="ai-header"
         style={{
           display: "flex", alignItems: "center", gap: 7,
           marginBottom: 16, paddingBottom: 14,
@@ -71,7 +87,7 @@ function AIInsightCard() {
       </div>
 
       {/* Row 1 — orange / dollar */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+      <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
         <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#FFF7ED", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
@@ -92,7 +108,7 @@ function AIInsightCard() {
       </div>
 
       {/* Row 2 — teal / shield-check */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+      <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0", borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
         <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ECFDF5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -112,7 +128,7 @@ function AIInsightCard() {
       </div>
 
       {/* Row 3 — purple / clock */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0" }}>
+      <div className="ai-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 0" }}>
         <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F3FF", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -163,8 +179,48 @@ const SIDE_ITEMS = [
 ];
 
 function DashboardMockup() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartLineRef = useRef<SVGPathElement>(null);
+  const scoreRef     = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const st = { trigger: containerRef.current, start: "top 88%", once: true };
+
+    // Sidebar + content entrance
+    const tl = gsap.timeline({ scrollTrigger: st });
+    tl.from(".dash-sidebar-item", { opacity: 0, x: -14, duration: 0.3, stagger: 0.07, ease: "power2.out" })
+      .from(".dash-content", { opacity: 0, y: 18, duration: 0.5, ease: "power2.out" }, "-=0.2");
+
+    // Draw chart line
+    if (chartLineRef.current) {
+      const len = chartLineRef.current.getTotalLength();
+      gsap.fromTo(chartLineRef.current,
+        { strokeDasharray: len, strokeDashoffset: len, opacity: 0 },
+        { strokeDashoffset: 0, opacity: 1, duration: 1.2, delay: 0.5, ease: "power2.inOut", scrollTrigger: st }
+      );
+      // Fade in area fill after line draws
+      gsap.from(".dash-area-fill", { opacity: 0, duration: 0.6, delay: 1.2, scrollTrigger: st });
+    }
+
+    // Count up 72%
+    if (scoreRef.current) {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 72, duration: 1.4, delay: 0.6, ease: "power2.out",
+        scrollTrigger: st,
+        onUpdate: () => {
+          if (scoreRef.current) scoreRef.current.textContent = `${Math.round(obj.val)}%`;
+        },
+      });
+    }
+
+    // Badge pop-in
+    gsap.from(".dash-badge", { opacity: 0, scale: 0.7, duration: 0.4, delay: 1.6, ease: "back.out(2)", scrollTrigger: st });
+  }, { scope: containerRef });
+
   return (
     <div
+      ref={containerRef}
       style={{
         background: "white",
         borderRadius: 16,
@@ -180,6 +236,7 @@ function DashboardMockup() {
         {SIDE_ITEMS.map((item) => (
           <div
             key={item.label}
+            className="dash-sidebar-item"
             style={{
               display: "flex",
               alignItems: "center",
@@ -203,7 +260,7 @@ function DashboardMockup() {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, padding: "16px 14px" }}>
+      <div className="dash-content" style={{ flex: 1, padding: "16px 14px" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 10 }}>
           Overview
         </div>
@@ -221,13 +278,13 @@ function DashboardMockup() {
               <stop offset="100%" stopColor="rgba(234,88,12,0)" />
             </linearGradient>
           </defs>
-          {/* Area fill */}
           <path
+            className="dash-area-fill"
             d="M0,38 C25,33 50,25 80,15 S120,5 140,2 L140,44 L0,44 Z"
             fill="url(#dashChartGrad)"
           />
-          {/* Line */}
           <path
+            ref={chartLineRef}
             d="M0,38 C25,33 50,25 80,15 S120,5 140,2"
             fill="none"
             stroke="#EA580C"
@@ -239,10 +296,10 @@ function DashboardMockup() {
         <div style={{ fontSize: 8.5, fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 3 }}>
           Retirement Readiness
         </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: "#111827", lineHeight: 1, marginBottom: 7 }}>
-          72%
+        <div ref={scoreRef} style={{ fontSize: 26, fontWeight: 700, color: "#111827", lineHeight: 1, marginBottom: 7 }}>
+          0%
         </div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "#DCFCE7" }}>
+        <div className="dash-badge" style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "#DCFCE7" }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#16A34A" }} />
           <span style={{ fontSize: 10, fontWeight: 600, color: "#16A34A" }}>On Track</span>
         </div>
@@ -253,8 +310,56 @@ function DashboardMockup() {
 
 /* ── Chat UI Mockup ───────────────────────────────────────────────────────── */
 function ChatMockup() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const scope = containerRef.current!;
+    const bubbles = gsap.utils.toArray<HTMLElement>(".chat-bubble", scope);
+    const typing  = scope.querySelector<HTMLElement>(".chat-typing")!;
+    const dots    = scope.querySelectorAll<HTMLElement>(".typing-dot");
+
+    // Bouncing dots loop (paused until needed)
+    const dotAnim = gsap.timeline({ repeat: -1, paused: true })
+      .to(dots, { y: -4, stagger: 0.13, duration: 0.26, ease: "power1.out" })
+      .to(dots, { y:  0, stagger: 0.13, duration: 0.26, ease: "power1.in" });
+
+    const runConversation = () => {
+      // Reset
+      gsap.set(bubbles, { opacity: 0, y: 10 });
+      gsap.set(typing,  { opacity: 0 });
+
+      const tl = gsap.timeline({ onComplete: () => gsap.delayedCall(2.5, runConversation) });
+
+      // AI types → msg 0
+      tl.set(typing, { opacity: 1 })
+        .call(() => dotAnim.restart())
+        .to({}, { duration: 1.0 })
+        .set(typing, { opacity: 0 })
+        .call(() => dotAnim.pause())
+        .to(bubbles[0], { opacity: 1, y: 0, duration: 0.38, ease: "power2.out" })
+        // User replies → msg 1
+        .to(bubbles[1], { opacity: 1, y: 0, duration: 0.38, ease: "power2.out" }, "+=0.55")
+        // AI types → msg 2
+        .set(typing, { opacity: 1 }, "+=0.4")
+        .call(() => dotAnim.restart())
+        .to({}, { duration: 1.2 })
+        .set(typing, { opacity: 0 })
+        .call(() => dotAnim.pause())
+        .to(bubbles[2], { opacity: 1, y: 0, duration: 0.38, ease: "power2.out" });
+    };
+
+    // Trigger once on scroll, then loop
+    ScrollTrigger.create({
+      trigger: scope,
+      start: "top 88%",
+      once: true,
+      onEnter: () => gsap.delayedCall(0.3, runConversation),
+    });
+  }, { scope: containerRef });
+
   return (
     <div
+      ref={containerRef}
       style={{
         background: "white",
         borderRadius: 16,
@@ -272,8 +377,9 @@ function ChatMockup() {
         <span style={{ fontSize: 12, fontWeight: 600, color: "#111827" }}>CORE Intelligence</span>
       </div>
 
-      {/* Purple message */}
+      {/* AI msg 1 */}
       <div
+        className="chat-bubble"
         style={{
           background: "#7C3AED",
           borderRadius: "14px 14px 14px 4px",
@@ -284,32 +390,61 @@ function ChatMockup() {
           marginBottom: 8,
           display: "inline-block",
           maxWidth: "92%",
+          opacity: 0,
         }}
       >
         How can I help you today?
       </div>
 
-      {/* Gray reply */}
+      {/* User reply */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+        <div
+          className="chat-bubble"
+          style={{
+            background: "#F3F4F6",
+            borderRadius: "14px 14px 4px 14px",
+            padding: "10px 14px",
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#374151",
+            maxWidth: "92%",
+            opacity: 0,
+          }}
+        >
+          How much should I save per month?
+        </div>
+      </div>
+
+      {/* Typing indicator */}
       <div
+        className="chat-typing"
+        style={{ display: "flex", gap: 4, marginBottom: 8, paddingLeft: 2, opacity: 0 }}
+      >
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="typing-dot"
+            style={{ width: 6, height: 6, borderRadius: "50%", background: "#7C3AED", opacity: 0.7 }}
+          />
+        ))}
+      </div>
+
+      {/* AI msg 2 */}
+      <div
+        className="chat-bubble"
         style={{
-          background: "#F3F4F6",
-          borderRadius: "14px 14px 4px 14px",
+          background: "#7C3AED",
+          borderRadius: "14px 14px 14px 4px",
           padding: "10px 14px",
           fontSize: 12,
           fontWeight: 500,
-          color: "#374151",
-          marginLeft: "auto",
+          color: "white",
+          display: "inline-block",
           maxWidth: "92%",
+          opacity: 0,
         }}
       >
-        How much should I save per month?
-      </div>
-
-      {/* Typing dots */}
-      <div style={{ display: "flex", gap: 4, marginTop: 10, paddingLeft: 2 }}>
-        {[0, 1, 2].map((i) => (
-          <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#D1D5DB" }} />
-        ))}
+        Saving $850/mo puts you on track to retire at 65 with $62k/year.
       </div>
     </div>
   );
@@ -396,6 +531,32 @@ function LanguageGlobeIllustration({ lang }: { lang: "en" | "es" }) {
 
 /* ── Retirement Projection Chart ─────────────────────────────────────────── */
 function RetirementProjectionChart() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useGSAP(() => {
+    const st = { trigger: containerRef.current, start: "top 88%", once: true };
+
+    // Header fade up
+    gsap.from(".proj-header", { opacity: 0, y: 16, duration: 0.5, ease: "power2.out", scrollTrigger: st });
+
+    // Draw chart lines via strokeDashoffset
+    const paths = svgRef.current?.querySelectorAll<SVGPathElement>(".proj-line");
+    paths?.forEach((path, i) => {
+      const len = path.getTotalLength();
+      gsap.fromTo(path,
+        { strokeDasharray: len, strokeDashoffset: len },
+        { strokeDashoffset: 0, duration: 1.4, delay: i * 0.25, ease: "power2.inOut", scrollTrigger: st }
+      );
+    });
+
+    // Endpoint circles pop in
+    gsap.from(".proj-circle", { scale: 0, opacity: 0, transformOrigin: "center", duration: 0.4, stagger: 0.12, ease: "back.out(2)", delay: 1.1, scrollTrigger: st });
+
+    // Value pills slide in from right
+    gsap.from(".proj-pill", { opacity: 0, x: 12, duration: 0.4, stagger: 0.12, ease: "power2.out", delay: 1.3, scrollTrigger: st });
+  }, { scope: containerRef });
+
   // SVG coordinate constants
   const VW = 374;
   const VH = 150;
@@ -419,6 +580,7 @@ function RetirementProjectionChart() {
 
   return (
     <div
+      ref={containerRef}
       style={{
         background: "white",
         borderRadius: 18,
@@ -429,7 +591,7 @@ function RetirementProjectionChart() {
       }}
     >
       {/* ── Header ── */}
-      <div style={{ marginBottom: 10 }}>
+      <div className="proj-header" style={{ marginBottom: 10 }}>
         <p
           style={{
             fontSize: 9.5,
@@ -509,6 +671,7 @@ function RetirementProjectionChart() {
 
       {/* ── SVG Chart ── */}
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${VW} ${VH}`}
         style={{ width: "100%", overflow: "visible" }}
       >
@@ -522,18 +685,19 @@ function RetirementProjectionChart() {
         {/* Gradient fill area under proposed plan */}
         <path d={fillArea} fill="url(#retProjGrad)" />
 
-        {/* Current plan — dashed */}
+        {/* Current plan — dashed (animated) */}
         <path
+          className="proj-line"
           d={current}
           fill="none"
           stroke="rgba(139,92,246,0.45)"
           strokeWidth="2"
-          strokeDasharray="5,4"
           strokeLinecap="round"
         />
 
-        {/* Proposed plan — solid */}
+        {/* Proposed plan — solid (animated) */}
         <path
+          className="proj-line"
           d={proposed}
           fill="none"
           stroke="#7C3AED"
@@ -542,34 +706,38 @@ function RetirementProjectionChart() {
         />
 
         {/* Endpoint circles */}
-        <circle cx={cx1} cy={cy0}      r="4" fill="#7C3AED" />
-        <circle cx={cx1} cy={cy0 + 42} r="4" fill="rgba(139,92,246,0.6)" />
+        <circle className="proj-circle" cx={cx1} cy={cy0}      r="4" fill="#7C3AED" />
+        <circle className="proj-circle" cx={cx1} cy={cy0 + 42} r="4" fill="rgba(139,92,246,0.6)" />
 
         {/* $1,842 pill */}
-        <rect x={cx1 + 9} y={cy0 - 9}      width="58" height="18" rx="9" fill="#7C3AED" />
-        <text
-          x={cx1 + 38} y={cy0 + 4}
-          textAnchor="middle"
-          fontSize="9.5"
-          fill="white"
-          fontWeight="700"
-          fontFamily="system-ui, sans-serif"
-        >
-          $1,842
-        </text>
+        <g className="proj-pill">
+          <rect x={cx1 + 9} y={cy0 - 9}      width="58" height="18" rx="9" fill="#7C3AED" />
+          <text
+            x={cx1 + 38} y={cy0 + 4}
+            textAnchor="middle"
+            fontSize="9.5"
+            fill="white"
+            fontWeight="700"
+            fontFamily="system-ui, sans-serif"
+          >
+            $1,842
+          </text>
+        </g>
 
         {/* $1,562 pill */}
-        <rect x={cx1 + 9} y={cy0 + 33} width="58" height="18" rx="9" fill="rgba(139,92,246,0.55)" />
-        <text
-          x={cx1 + 38} y={cy0 + 46}
-          textAnchor="middle"
-          fontSize="9.5"
-          fill="white"
-          fontWeight="700"
-          fontFamily="system-ui, sans-serif"
-        >
-          $1,562
-        </text>
+        <g className="proj-pill">
+          <rect x={cx1 + 9} y={cy0 + 33} width="58" height="18" rx="9" fill="rgba(139,92,246,0.55)" />
+          <text
+            x={cx1 + 38} y={cy0 + 46}
+            textAnchor="middle"
+            fontSize="9.5"
+            fill="white"
+            fontWeight="700"
+            fontFamily="system-ui, sans-serif"
+          >
+            $1,562
+          </text>
+        </g>
 
         {/* X-axis labels */}
         {xLabels.map(({ x, label }) => (
